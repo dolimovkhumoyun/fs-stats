@@ -1,39 +1,34 @@
 import React, { Component } from "react";
 import Joi from "joi-browser";
-import "react-datepicker/dist/react-datepicker.css";
 import Form from "./form";
-import {
-  MDBSelect,
-  MDBSelectInput,
-  MDBSelectOptions,
-  MDBSelectOption
-} from "mdbreact";
+
+// Import Materialize
+import M from "materialize-css";
 
 class SearchBar extends Form {
   state = {
-    data: { username: "" },
-    errors: {}
+    data: { direction: [] },
+    errors: {},
+    options: [
+      { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
+      { _id: "5b21ca3eeb7f6fbccd471814", name: "Comedy" },
+      { _id: "5b21ca3eeb7f6fbccd471820", name: "Thriller" }
+    ]
   };
 
   schema = {
-    username: Joi.string()
+    direction: Joi.string()
       .required()
-      .label("Username")
+      .label("Direction")
   };
 
-  doSubmit = () => {
-    const { username, password } = this.state.data;
+  componentDidMount() {
+    M.AutoInit();
+  }
 
-    if (username === "admin" && password === "admin")
-      this.props.history.push("/dashboard");
-  };
   render() {
-    return (
-      <div className="col-md-2 float-left m-4">
-        <h2>Search</h2>
-        {this.renderInput("username", "Username")}
-      </div>
-    );
+    const { options } = this.state;
+    return <div>{this.renderSelect("direction", "Direction", options)}</div>;
   }
 }
 
