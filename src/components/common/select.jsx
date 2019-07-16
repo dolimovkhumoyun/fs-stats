@@ -2,7 +2,7 @@ import React from "react";
 
 const Select = ({ name, label, value, error, options, ...rest }) => {
   return (
-    <div className="form-group col-md-4">
+    <div className="form-group col-md-6">
       <label htmlFor={name}>{label} </label>
       <select name={name} id={name} {...rest} className="form-control" multiple>
         <option value={null} defaultValue>

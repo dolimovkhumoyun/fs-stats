@@ -1,8 +1,9 @@
 import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
+import DateTime from "react-datetime";
 
-// import moment from "moment";
+import moment from "moment";
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -31,13 +32,12 @@ class SearchBar extends Form {
     alert("Submitted");
   };
 
-  // handleChange = (date, e) => {
-  //   // date = moment(date).format("YYYY:MM:DD");
-  //   const { currentTarget: input } = e;
-  //   console.log(date);
-  //   this.setState({ date: date });
-  //   console.log(this.state.date);
-  // };
+  handleChange = date => {
+    date = moment(date).format("YYYY:MM:DD");
+
+    this.setState({ date: date });
+    console.log(this.state.date);
+  };
 
   render() {
     const { options } = this.state;
@@ -46,7 +46,13 @@ class SearchBar extends Form {
       <div>
         <form onSubmit={this.handleSubmit}>
           {this.renderSelect("direction", "Direction", options)}
-          {this.renderInput("carNumber", "carNumber")}
+          {/* <lable>Please choose date</lable> */}
+          <DateTime
+            className="col-md-6"
+            name="date"
+            onChange={this.handleChange}
+          />
+          {this.renderInput("carNumber", "Car Number")}
           {this.renderButton("submit")}
         </form>
       </div>
