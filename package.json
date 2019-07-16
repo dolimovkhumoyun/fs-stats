@@ -3,23 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@hapi/joi": "^15.1.0",
-    "@material-ui/core": "^4.2.0",
     "@nivo/bar": "^0.59.2",
     "bootstrap": "^4.1.1",
     "chart.js": "^2.8.0",
     "font-awesome": "^4.7.0",
     "joi-browser": "^13.4.0",
-    "materialize-css": "^1.0.0-rc.2",
-    "mdbreact": "^4.18.0",
-    "mui-datatables": "^2.6.3",
+    "moment": "^2.24.0",
     "react": "^16.8.6",
-    "react-bootstrap-date-picker": "^5.1.0",
+    "react-bootstrap-datetimepicker": "0.0.22",
     "react-chartjs-2": "^2.7.6",
     "react-datepicker": "^2.8.0",
+    "react-datetimepicker-bootstrap": "^1.1.2",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.1",
-    "react-scripts": "3.0.1"
+    "react-scripts": "3.0.1",
+    "tempusdominus-bootstrap-4": "^5.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

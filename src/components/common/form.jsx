@@ -22,9 +22,11 @@ class Form extends Component {
   };
 
   validateProperty = ({ name, value }) => {
+    console.log(name, value);
     const obj = { [name]: value };
     const schema = { [name]: this.schema[name] };
     const { error } = Joi.validate(obj, schema);
+    console.log(error);
     return error ? error.details[0].message : null;
   };
 
@@ -41,12 +43,23 @@ class Form extends Component {
 
   handleChange = e => {
     const { currentTarget: input } = e;
-    var options = e.target.options;
-    var value = [];
-    for (var i = 0, l = options.length; i < l; i++) {
-      if (options[i].selected) {
-        value.push(options[i].value);
+
+    let data = "";
+    if (input.type === "select-multiple") {
+      var options = e.target.options;
+      var value = [];
+      for (var i = 0, l = options.length; i < l; i++) {
+        if (options[i].selected) {
+          value.push(options[i].value);
+        }
       }
+
+      data = { ...this.state.data };
+      data[input.name] = value;
+    } else {
+      data = { ...this.state.data };
+      input.value = input.value.toUpperCase();
+      data[input.name] = input.value;
     }
 
     const errors = { ...this.state.errors };
@@ -54,15 +67,13 @@ class Form extends Component {
     if (errorMessage) errors[input.name] = errorMessage;
     else delete errors[input.name];
 
-    const data = { ...this.state.data };
-    data[input.name] = value;
-
     this.setState({ data, errors });
   };
 
   renderButton(label) {
+    console.log(this.validate());
     return (
-      <button disabled={this.validate()} className="btn btn-primary">
+      <button disabled={this.validate()} className="btn btn-primary ml-3">
         {label}
       </button>
     );

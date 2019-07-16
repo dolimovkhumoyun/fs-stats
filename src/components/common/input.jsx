@@ -2,11 +2,11 @@ import React from "react";
 
 const Input = ({ name, label, error, ...rest }) => {
   return (
-    <div className="form-group">
-      <label htmlFor={name}>{label}</label>
+    <div className="form-group col-md-4">
+      <label htmlFor={name}>{name}</label>
       <input
         {...rest}
-        name={name}
+        name={label}
         id={name}
         className="form-control"
         placeholder={name}

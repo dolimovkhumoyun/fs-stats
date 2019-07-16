@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
-import DatatablePage from "./common/table";
+import Table from "./common/table";
 
 class Search extends Component {
   state = {};
@@ -9,9 +9,15 @@ class Search extends Component {
     return (
       <React.Fragment>
         <NavBar />
-        <div className="container-fluid">
-          <SearchBar />
-          <DatatablePage />
+
+        <div className="row">
+          <div className="col-md-4">
+            <SearchBar />
+          </div>
+
+          <div className="col-md-8">
+            <Table />
+          </div>
         </div>
       </React.Fragment>
     );

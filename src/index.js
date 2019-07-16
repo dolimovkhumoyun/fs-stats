@@ -4,11 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-import "font-awesome/css/font-awesome.css";
 import "bootstrap/dist/css/bootstrap.css";
-import "materialize-css/dist/css/materialize.min.css";
-
-// import "materialize-css/dist/css/materialize.min.css";
+import "font-awesome/css/font-awesome.css";
 
 ReactDOM.render(
   <BrowserRouter>
