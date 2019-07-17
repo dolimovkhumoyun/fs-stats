@@ -17,7 +17,8 @@ class Search extends Component {
             <SearchBar />
           </div>
 
-          <div className="col-md-7">
+          <div className="container col-md-7 ">
+            <h5 className="mt-4">Andijon - 30 </h5>
             <Table />
           </div>
         </div>

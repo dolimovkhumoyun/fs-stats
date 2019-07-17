@@ -5,7 +5,7 @@ const Select = ({ name, label, value, error, options, ...rest }) => {
     <div className="form-group col-md-12">
       <label htmlFor={name}>{label} </label>
       <select name={name} id={name} {...rest} className="form-control" multiple>
-        <option value="All" key="0" defaultValue>
+        <option value="-1" key="0" defaultValue>
           All
         </option>
         {options.map(option => (

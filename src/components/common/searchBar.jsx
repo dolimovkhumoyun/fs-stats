@@ -37,10 +37,20 @@ class SearchBar extends Form {
       .label("Car Number")
   };
 
-  doSubmit = () => {
-    // const { data, startDate, endDate } = this.state;
-    // const { direction, carNumber } = data;
-    alert("Submitted");
+  doSubmit = async () => {
+    const { data, startDate, endDate } = this.state;
+    const { direction, carNumber } = data;
+
+    let post = {};
+    post.direction = direction;
+    post.startDate = startDate;
+    post.endDate = endDate;
+    post.carNumber = carNumber;
+    const response = await axios.post(
+      "http://192.168.1.31/fs_stat_back/API/search",
+      post
+    );
+    console.log(response.data);
   };
 
   render() {
