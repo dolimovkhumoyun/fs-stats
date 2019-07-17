@@ -27,8 +27,8 @@ class Login extends Form {
 
   render() {
     return (
-      <div className="container wrapper box-shadow mt-4">
-        <form onSubmit={this.handleSubmit} className="form-signin">
+      <div className="container wrapper box-shadow ">
+        <form onSubmit={this.handleLogin} className="form-signin">
           <h1>Login Form</h1>
           {this.renderInput("username", "Username")}
           {this.renderInput("password", "Password", "password")}

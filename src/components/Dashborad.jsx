@@ -36,13 +36,15 @@ class Dashboard extends Component {
 
     return (
       <React.Fragment>
-        <NavBar />
-        <Bar
-          data={data}
-          width={300}
-          height={50}
-          options={{ maintainAspectRatio: true }}
-        />
+        <div className="container-fluid">
+          <NavBar />
+          <Bar
+            data={data}
+            width={300}
+            height={50}
+            options={{ maintainAspectRatio: true }}
+          />
+        </div>
       </React.Fragment>
     );
   }

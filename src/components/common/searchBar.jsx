@@ -1,42 +1,46 @@
 import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
-import DateTime from "react-datetime";
-
 import moment from "moment";
+import axios from "axios";
 
-import "react-datepicker/dist/react-datepicker.css";
+// import http from "../../service/httpService";
 
 class SearchBar extends Form {
   state = {
     data: { direction: [], carNumber: "" },
-    date: new Date(),
+    startDate: moment()
+      .startOf("day")
+      .format("YYYY:MM:DD HH:mm:ss"),
+    endDate: moment()
+      .endOf("day")
+      .format("YYYY:MM:DD HH:mm:ss"),
     errors: {},
-    options: [
-      { _id: "5b21ca3eeb7f6fbccd471818", name: "Action" },
-      { _id: "5b21ca3eeb7f6fbccd47181564", name: "Comedy" },
-      { _id: "5b21ca3eeb7f6fbccd4718209", name: "Thriller" }
-    ]
+    options: []
   };
+
+  async componentDidMount() {
+    const response = await axios.get(
+      "http://192.168.1.31/fs_stat_back/API/regions"
+    );
+
+    const options = response.data;
+    this.setState({ options });
+  }
 
   schema = {
     direction: Joi.required().label("Direction"),
+
     carNumber: Joi.string()
-      .min(3)
-      .max(10)
+      .regex(/^[A-Za-z*_%\d]+$/g)
       .required()
       .label("Car Number")
   };
 
   doSubmit = () => {
+    // const { data, startDate, endDate } = this.state;
+    // const { direction, carNumber } = data;
     alert("Submitted");
-  };
-
-  handleChange = date => {
-    date = moment(date).format("YYYY:MM:DD");
-
-    this.setState({ date: date });
-    console.log(this.state.date);
   };
 
   render() {
@@ -44,15 +48,24 @@ class SearchBar extends Form {
 
     return (
       <div>
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit} className="mt-4">
           {this.renderSelect("direction", "Direction", options)}
-          {/* <lable>Please choose date</lable> */}
-          <DateTime
-            className="col-md-6"
-            name="date"
-            onChange={this.handleChange}
-          />
-          {this.renderInput("carNumber", "Car Number")}
+          {this.renderDatePicker(
+            "startDate",
+            "Start Date: ",
+            this.handleStartDateChange
+          )}
+          {this.renderDatePicker(
+            "endDate",
+            "End Date: ",
+            this.handleEndDateChange
+          )}
+          {this.renderInput(
+            "carNumber",
+            "Car Number",
+            "60A001AA",
+            this.handleCarNumChange
+          )}
           {this.renderButton("submit")}
         </form>
       </div>

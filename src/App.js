@@ -11,13 +11,11 @@ class App extends Component {
   render() {
     return (
       <React.Fragment>
-        <main className="">
-          <Switch>
-            <Route path="/dashboard" component={Dashboard} />
-            <Route path="/search" component={Search} />
-            <Route path="/" component={Login} />
-          </Switch>
-        </main>
+        <Switch>
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/search" component={Search} />
+          <Route path="/" component={Login} />
+        </Switch>
       </React.Fragment>
     );
   }

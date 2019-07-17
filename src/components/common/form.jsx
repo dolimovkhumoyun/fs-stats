@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import Joi from "joi-browser";
 import Input from "./input";
 import Select from "./select";
+import DateTime from "react-datetime";
+import moment from "moment";
 
 class Form extends Component {
   state = {
@@ -22,12 +24,21 @@ class Form extends Component {
   };
 
   validateProperty = ({ name, value }) => {
-    console.log(name, value);
     const obj = { [name]: value };
     const schema = { [name]: this.schema[name] };
     const { error } = Joi.validate(obj, schema);
-    console.log(error);
+
     return error ? error.details[0].message : null;
+  };
+
+  handleLogin = e => {
+    e.preventDefault();
+
+    const errors = this.validate();
+
+    this.setState({ errors: errors || {} });
+    if (errors) return;
+    this.doSubmit();
   };
 
   handleSubmit = e => {
@@ -37,6 +48,7 @@ class Form extends Component {
 
     this.setState({ errors: errors || {} });
     if (errors) return;
+    // console.log(errors);
 
     this.doSubmit();
   };
@@ -58,7 +70,6 @@ class Form extends Component {
       data[input.name] = value;
     } else {
       data = { ...this.state.data };
-      input.value = input.value.toUpperCase();
       data[input.name] = input.value;
     }
 
@@ -69,9 +80,34 @@ class Form extends Component {
 
     this.setState({ data, errors });
   };
+  handleStartDateChange = date => {
+    date = moment(date).format("YYYY:MM:DD HH:mm:ss");
+
+    this.setState({ startDate: date });
+  };
+  handleEndDateChange = date => {
+    date = moment(date).format("YYYY:MM:DD HH:mm:ss");
+    console.log(date);
+
+    this.setState({ endDate: date });
+  };
+
+  handleCarNumChange = e => {
+    const { currentTarget: input } = e;
+
+    const data = { ...this.state.data };
+    const value = input.value.toUpperCase();
+    data[input.name] = value;
+
+    const errors = { ...this.state.errors };
+    const errorMessage = this.validateProperty(input);
+    if (errorMessage) errors[input.name] = errorMessage;
+    else delete errors[input.name];
+
+    this.setState({ data, errors });
+  };
 
   renderButton(label) {
-    console.log(this.validate());
     return (
       <button disabled={this.validate()} className="btn btn-primary ml-3">
         {label}
@@ -94,7 +130,7 @@ class Form extends Component {
     );
   }
 
-  renderInput(name, label, type = "text") {
+  renderInput(name, label, placeholder = null, funcName, type = "text") {
     const { data, errors } = this.state;
 
     return (
@@ -103,9 +139,31 @@ class Form extends Component {
         name={name}
         value={data[name]}
         label={label}
-        onChange={this.handleChange}
+        onChange={funcName}
         error={errors[name]}
+        placeholder={placeholder}
       />
+    );
+  }
+
+  renderDatePicker(name, label, funcName) {
+    const { startDate, endDate } = this.state;
+    let value;
+    name === "startDate" ? (value = startDate) : (value = endDate);
+
+    return (
+      <div className="col-md-12">
+        <label htmlFor={name}>{label}</label>
+        <DateTime
+          defaultValue={value}
+          viewMode="days"
+          dateFormat="YYYY:MM:DD"
+          timeFormat="HH:mm:ss"
+          inputProps={{ name: name, id: name }}
+          onChange={funcName}
+          closeOnSelect={true}
+        />
+      </div>
     );
   }
 }
