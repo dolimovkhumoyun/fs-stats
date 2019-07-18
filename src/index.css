@@ -230,3 +230,12 @@ td.rdtYear:hover {
 .rdtTime td {
   cursor: default;
 }
+
+.bar-container {
+  width: 50vh;
+  height: 40vh;
+}
+
+.multiselect {
+  height: 20vh;
+}

@@ -2,8 +2,9 @@ import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
 import moment from "moment";
-import axios from "axios";
 
+import http from "../../service/httpService";
+import config from "../../service/config.json";
 // import http from "../../service/httpService";
 
 class SearchBar extends Form {
@@ -20,9 +21,7 @@ class SearchBar extends Form {
   };
 
   async componentDidMount() {
-    const response = await axios.get(
-      "http://192.168.1.31/fs_stat_back/API/regions"
-    );
+    const response = await http.get(config.apiEndpoint + "regions");
 
     const options = response.data;
     this.setState({ options });
@@ -46,10 +45,7 @@ class SearchBar extends Form {
     post.startDate = startDate;
     post.endDate = endDate;
     post.carNumber = carNumber;
-    const response = await axios.post(
-      "http://192.168.1.31/fs_stat_back/API/search",
-      post
-    );
+    const response = await http.post(config.apiEndpoint + "search", post);
     console.log(response.data);
   };
 

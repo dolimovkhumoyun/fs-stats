@@ -4,7 +4,13 @@ const Select = ({ name, label, value, error, options, ...rest }) => {
   return (
     <div className="form-group col-md-12">
       <label htmlFor={name}>{label} </label>
-      <select name={name} id={name} {...rest} className="form-control" multiple>
+      <select
+        name={name}
+        id={name}
+        {...rest}
+        className="form-control multiselect mb-2"
+        multiple
+      >
         <option value="-1" key="0" defaultValue>
           All
         </option>

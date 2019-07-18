@@ -130,7 +130,7 @@ class Form extends Component {
     );
   }
 
-  renderInput(name, label, placeholder = null, funcName, type = "text") {
+  renderInput(name, label, placeholder = "username", funcName, type = "text") {
     const { data, errors } = this.state;
 
     return (
@@ -152,7 +152,7 @@ class Form extends Component {
     name === "startDate" ? (value = startDate) : (value = endDate);
 
     return (
-      <div className="col-md-12">
+      <div className="col-md-12 mt-4">
         <label htmlFor={name}>{label}</label>
         <DateTime
           defaultValue={value}
