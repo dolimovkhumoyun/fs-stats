@@ -3,7 +3,8 @@
   /* margin-top: 2%; */
 }
 .searchBar {
-  height: 93.1vh;
+  max-height: 100vh;
+  height: 100vh;
   /* width:; */
   /* border: 1px solid red; */
   /* margin-top: 10%; */

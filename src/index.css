@@ -232,8 +232,8 @@ td.rdtYear:hover {
 }
 
 .bar-container {
-  width: 50vh;
-  height: 40vh;
+  width: 40vh;
+  height: 30vh;
 }
 
 .multiselect {

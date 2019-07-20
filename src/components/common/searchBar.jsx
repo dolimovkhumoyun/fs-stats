@@ -5,17 +5,16 @@ import moment from "moment";
 
 import http from "../../service/httpService";
 import config from "../../service/config.json";
-// import http from "../../service/httpService";
 
 class SearchBar extends Form {
   state = {
     data: { direction: [], carNumber: "" },
     startDate: moment()
       .startOf("day")
-      .format("YYYY:MM:DD HH:mm:ss"),
+      .format("YYYY-MM-DD HH:mm:ss"),
     endDate: moment()
       .endOf("day")
-      .format("YYYY:MM:DD HH:mm:ss"),
+      .format("YYYY-MM-DD HH:mm:ss"),
     errors: {},
     options: []
   };
@@ -58,12 +57,12 @@ class SearchBar extends Form {
           {this.renderSelect("direction", "Direction", options)}
           {this.renderDatePicker(
             "startDate",
-            "Start Date: ",
+            "Start Date : ",
             this.handleStartDateChange
           )}
           {this.renderDatePicker(
             "endDate",
-            "End Date: ",
+            "End Date : ",
             this.handleEndDateChange
           )}
           {this.renderInput(

@@ -153,7 +153,9 @@ class Form extends Component {
 
     return (
       <div className="col-md-12 mt-4">
-        <label htmlFor={name}>{label}</label>
+        <label htmlFor={name}>
+          <strong>{label}</strong>
+        </label>
         <DateTime
           defaultValue={value}
           viewMode="days"

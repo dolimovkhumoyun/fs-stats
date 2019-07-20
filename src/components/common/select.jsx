@@ -3,7 +3,9 @@ import React from "react";
 const Select = ({ name, label, value, error, options, ...rest }) => {
   return (
     <div className="form-group col-md-12">
-      <label htmlFor={name}>{label} </label>
+      <label htmlFor={name}>
+        <strong>{label} :</strong>
+      </label>
       <select
         name={name}
         id={name}

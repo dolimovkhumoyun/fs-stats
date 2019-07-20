@@ -4,7 +4,7 @@ const Input = ({ name, label, error, ...rest }) => {
   return (
     <div className="form-group col-md-12 ">
       <label htmlFor={name} className="mt-4">
-        {label}
+        <strong>{label} :</strong>
       </label>
       <input name={name} id={name} className="form-control" {...rest} />
       {error && (
