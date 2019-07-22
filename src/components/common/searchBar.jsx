@@ -18,7 +18,7 @@ class SearchBar extends Form {
     errors: {},
     options: []
   };
-
+  client = new WebSocket("ws://192.168.1.31:8282");
   async componentDidMount() {
     const response = await http.get(config.apiEndpoint + "regions");
 
@@ -44,8 +44,12 @@ class SearchBar extends Form {
     post.startDate = startDate;
     post.endDate = endDate;
     post.carNumber = carNumber;
-    const response = await http.post(config.apiEndpoint + "search", post);
-    console.log(response.data);
+
+    this.props.callBack(direction);
+    // const response = await http.post(config.apiEndpoint + "search", post);
+
+    // this.client.send(JSON.stringify("Hi message has been sent"));
+    // console.log(response.data);
   };
 
   render() {
@@ -53,6 +57,7 @@ class SearchBar extends Form {
 
     return (
       <div>
+        {/* <Search data={options} /> */}
         <form onSubmit={this.handleSubmit} className="mt-4">
           {this.renderSelect("direction", "Direction", options)}
           {this.renderDatePicker(

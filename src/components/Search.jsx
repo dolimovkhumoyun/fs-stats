@@ -2,47 +2,50 @@ import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
 import Table from "./common/table";
-
 import { Tabs, Tab, TabPanel, TabList } from "react-web-tabs";
+import _ from "lodash";
+
 import "react-web-tabs/dist/react-web-tabs.css";
 import "../css/search.css";
-// import ListTabs from "./common/tab";
 
+//  Search Bar
 class Search extends Component {
   state = {
     movies: [],
-    options: [
-      { id: 1, name: "Andijon" },
-      { id: 2, name: "Toshkent" },
-      { id: 3, name: "Farg'ona" },
-      { id: 4, name: "Namangan" },
-      { id: 5, name: "Samarqand" }
-    ],
-    selectedOption: null
+    options: [],
+    selectedOption: ""
   };
 
   handleOptionSelect = option => {
     this.setState({ selectedOption: option });
   };
-  /* <ListTabs
-                  data={options}
-                  onItemSelect={this.handleOptionSelect}
-                  selectedItem={this.state.selectedOption}
-                /> */
+
+  callBack = dataFromChild => {
+    this.setState({
+      options: dataFromChild,
+      selectedOption: dataFromChild[0].id + "t"
+    });
+  };
+
   render() {
-    const { options } = this.state;
+    const { options, selectedOption } = this.state;
 
     return (
       <React.Fragment>
         <NavBar />
-
         <div className="row">
           <div className="col-md-2 mw-30 rounded-sm searchBar shadow">
-            <SearchBar />
+            <SearchBar callBack={this.callBack} />
           </div>
-
           <div className=" col-md-10 mt-4">
-            <Tabs defaultTab={options[0].id + "t"} vertical>
+            <Tabs
+              defaultTab={selectedOption}
+              vertical
+              focusable
+              onChange={tabId => {
+                this.setState({ selectedOption: tabId });
+              }}
+            >
               <TabList>
                 {options.map(option => (
                   <Tab key={option.id} tabFor={option.id + "t"}>

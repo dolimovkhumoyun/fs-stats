@@ -9,6 +9,7 @@
     "chart.js": "^2.8.0",
     "font-awesome": "^4.7.0",
     "joi-browser": "^13.4.0",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "react": "^16.8.6",
     "react-bootstrap-datetimepicker": "0.0.22",
