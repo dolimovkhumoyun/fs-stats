@@ -18,17 +18,15 @@ class SearchBar extends Form {
     errors: {},
     options: []
   };
-  client = new WebSocket("ws://192.168.1.31:8282");
-  async componentDidMount() {
-    const response = await http.get(config.apiEndpoint + "regions");
 
-    const options = response.data;
-    this.setState({ options });
+  async componentDidMount() {
+    // const response = await http.get(config.apiEndpoint + "regions");
+    // const options = response.data;
+    // this.setState({ options });
   }
 
   schema = {
     direction: Joi.required().label("Direction"),
-
     carNumber: Joi.string()
       .regex(/^[A-Za-z*_%\d]+$/g)
       .required()
@@ -46,7 +44,8 @@ class SearchBar extends Form {
     post.carNumber = carNumber;
 
     this.props.callBack(direction);
-    // const response = await http.post(config.apiEndpoint + "search", post);
+    const response = await http.get(config.apiEndpoint + "search");
+    console.log(response);
 
     // this.client.send(JSON.stringify("Hi message has been sent"));
     // console.log(response.data);

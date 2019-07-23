@@ -60,7 +60,7 @@ class Form extends Component {
     if (input.type === "select-multiple") {
       var options = e.target.options;
       var value = [];
-      var k = 0;
+      let k = 0;
       for (var i = 0, l = options.length; i < l; i++) {
         if (options[i].selected) {
           value.push(

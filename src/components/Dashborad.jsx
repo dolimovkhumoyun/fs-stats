@@ -63,7 +63,6 @@ class Dashboard extends Component {
 
   render() {
     const { charts } = this.state;
-    console.log(this.state);
     return (
       <React.Fragment>
         <NavBar />

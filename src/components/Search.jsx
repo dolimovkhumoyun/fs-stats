@@ -1,20 +1,27 @@
 import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
-import Table from "./common/table";
 import { Tabs, Tab, TabPanel, TabList } from "react-web-tabs";
+import RegionsTable from "./common/regionsTable";
 import _ from "lodash";
 
 import "react-web-tabs/dist/react-web-tabs.css";
 import "../css/search.css";
+import { getData, getData1 } from "../service/data";
+import MoreBtn from "./common/moreButton";
 
 //  Search Bar
 class Search extends Component {
   state = {
-    movies: [],
+    request: [],
     options: [],
     selectedOption: ""
   };
+
+  componentDidMount() {
+    const request = getData();
+    this.setState({ request });
+  }
 
   handleOptionSelect = option => {
     this.setState({ selectedOption: option });
@@ -23,13 +30,22 @@ class Search extends Component {
   callBack = dataFromChild => {
     this.setState({
       options: dataFromChild,
-      selectedOption: dataFromChild[0].id + "t"
+      selectedOption: _.isEmpty(dataFromChild[0])
+        ? ""
+        : dataFromChild[0].id + "t"
     });
   };
 
-  render() {
-    const { options, selectedOption } = this.state;
+  handleMore(request) {
+    console.log("Clicked");
+    const updatedReq = getData1();
+    const newData = _.union(request, updatedReq);
+    // console.log(newData);
+    this.setState({ request: newData });
+  }
 
+  render() {
+    const { options, selectedOption, request } = this.state;
     return (
       <React.Fragment>
         <NavBar />
@@ -61,7 +77,8 @@ class Search extends Component {
                   style={{ height: "60vh", width: "100vw" }}
                 >
                   <h5 className="m-4">{option.name}</h5>
-                  <Table />
+                  <RegionsTable request={request} />
+                  <MoreBtn onClick={() => this.handleMore(request)} />
                 </TabPanel>
               ))}
             </Tabs>
