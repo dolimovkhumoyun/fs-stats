@@ -1,14 +1,15 @@
 import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
-import moment from "moment";
+import Select from "react-select";
+import { RadioGroup, RadioButton } from "react-radio-buttons";
 
-import http from "../../service/httpService";
-import config from "../../service/config.json";
+import moment from "moment";
+import _ from "lodash";
 
 class SearchBar extends Form {
   state = {
-    data: { direction: [], carNumber: "" },
+    data: { direction: [], posts: [], carNumber: "" },
     startDate: moment()
       .startOf("day")
       .format("YYYY-MM-DD HH:mm:ss"),
@@ -16,14 +17,9 @@ class SearchBar extends Form {
       .endOf("day")
       .format("YYYY-MM-DD HH:mm:ss"),
     errors: {},
-    options: []
+    optionsRegion: [],
+    optionsPosts: []
   };
-
-  async componentDidMount() {
-    // const response = await http.get(config.apiEndpoint + "regions");
-    // const options = response.data;
-    // this.setState({ options });
-  }
 
   schema = {
     direction: Joi.required().label("Direction"),
@@ -33,48 +29,177 @@ class SearchBar extends Form {
       .label("Car Number")
   };
 
-  doSubmit = async () => {
-    const { data, startDate, endDate } = this.state;
-    const { direction, carNumber } = data;
+  getOptions() {
+    this.props.socket.emit("regions", {});
+    const interval = 6 * 60 * 1000; // 6 minutes
+    setInterval(() => {
+      this.props.socket.emit("regions", {});
+    }, interval);
+  }
 
+  componentDidMount() {
+    const { socket } = this.props;
+    var that = this; // For using this inside other functions
+    socket.once("connect", function(data) {
+      that.getOptions();
+      this.on("regions", data => {
+        var options = data.data;
+        options.map(option => {
+          if (option.hasOwnProperty("isoffline")) {
+            option.isDisabled = option.isoffline;
+            delete option.isoffline;
+          }
+        });
+
+        that.setState({ optionsRegion: options });
+      });
+      this.on("err", function(data) {
+        console.log(data);
+      });
+    });
+  }
+
+  doSubmit = async () => {
+    const { socket } = this.props;
+    const { data, startDate, endDate } = this.state;
+    var { direction, carNumber } = data;
+    this.props.callBack(direction);
+
+    direction = _.map(direction, "id");
     let post = {};
     post.direction = direction;
     post.startDate = startDate;
     post.endDate = endDate;
     post.carNumber = carNumber;
 
-    this.props.callBack(direction);
-    const response = await http.get(config.apiEndpoint + "search");
-    console.log(response);
+    socket.emit("search", post);
+  };
 
-    // this.client.send(JSON.stringify("Hi message has been sent"));
-    // console.log(response.data);
+  handleChange = selectedOptions => {
+    const dirs = _.map(selectedOptions, "value");
+    const { posts } = this.state.data;
+    const direction = selectedOptions;
+
+    this.setState({
+      data: { direction: direction, posts: posts, carNumber: "" }
+    });
+    if (direction === null) {
+      this.setState({ optionsPosts: [] });
+      return;
+    }
+
+    this.props.socket.emit("posts", dirs);
+    const that = this;
+    this.props.socket.once("posts", function(data) {
+      const optionsPosts = data.data;
+      optionsPosts.map(option => {
+        if (option.hasOwnProperty("isoffline")) {
+          option.isDisabled = option.isoffline;
+          delete option.isoffline;
+        }
+      });
+
+      that.setState({ optionsPosts });
+    });
+  };
+
+  handlePostsSelect = selectedOptions => {
+    const { direction } = this.state.data;
+    const posts = selectedOptions;
+    this.setState({
+      data: { direction: direction, posts: posts, carNumber: "" }
+    });
+  };
+
+  onChange = selected => {
+    console.log(selected);
   };
 
   render() {
-    const { options } = this.state;
-
+    const { optionsRegion, optionsPosts } = this.state;
     return (
       <div>
-        {/* <Search data={options} /> */}
         <form onSubmit={this.handleSubmit} className="mt-4">
-          {this.renderSelect("direction", "Direction", options)}
-          {this.renderDatePicker(
-            "startDate",
-            "Start Date : ",
-            this.handleStartDateChange
-          )}
-          {this.renderDatePicker(
-            "endDate",
-            "End Date : ",
-            this.handleEndDateChange
-          )}
+          <label htmlFor={"regions"}>
+            <strong>Regions: </strong>
+          </label>
+          <Select
+            options={optionsRegion}
+            onChange={this.handleChange}
+            isMulti
+            closeMenuOnSelect={false}
+            inputProps={{ id: "fieldId" }}
+            className=""
+            clearable={false}
+            required={true}
+          />
+
+          <label htmlFor={"regions"} className="mt-2">
+            <strong>Posts: </strong>
+          </label>
+          <Select
+            options={optionsPosts}
+            onChange={this.handlePostsSelect}
+            isMulti
+            closeMenuOnSelect={false}
+            inputProps={{ id: "fieldId" }}
+            className=""
+          />
+
+          <label htmlFor="" className="mt-2">
+            <strong> Date and Time: </strong>
+          </label>
+          <div className="input-group ">
+            {this.renderDatePicker(
+              "startDate",
+              "Start Date : ",
+              "from",
+              this.handleStartDateChange
+            )}
+
+            {this.renderDatePicker(
+              "endDate",
+              "End Date : ",
+              "to",
+              this.handleEndDateChange
+            )}
+          </div>
+          <div className="mt-3">
+            <RadioGroup onChange={this.onChange} horizontal>
+              <RadioButton
+                value="all"
+                iconSize={20}
+                rootColor={"gray"}
+                pointColor={"blue"}
+              >
+                All
+              </RadioButton>
+              <RadioButton
+                value="wanted"
+                iconSize={20}
+                rootColor={"gray"}
+                pointColor={"blue"}
+              >
+                Wanted
+              </RadioButton>
+              <RadioButton
+                value="melon"
+                iconSize={20}
+                rootColor={"gray"}
+                pointColor={"blue"}
+              >
+                Not Wanted
+              </RadioButton>
+              {/* <ReversedRadioButton value="melon">Melon</ReversedRadioButton> */}
+            </RadioGroup>
+          </div>
           {this.renderInput(
             "carNumber",
             "Car Number",
             "60A001AA",
             this.handleCarNumChange
           )}
+
           {this.renderButton("submit")}
         </form>
       </div>

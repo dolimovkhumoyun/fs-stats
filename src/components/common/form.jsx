@@ -57,25 +57,9 @@ class Form extends Component {
     const { currentTarget: input } = e;
 
     let data = "";
-    if (input.type === "select-multiple") {
-      var options = e.target.options;
-      var value = [];
-      let k = 0;
-      for (var i = 0, l = options.length; i < l; i++) {
-        if (options[i].selected) {
-          value.push(
-            (k = { id: options[i].value, name: options[i].innerHTML })
-          );
-          k++;
-        }
-      }
 
-      data = { ...this.state.data };
-      data[input.name] = value;
-    } else {
-      data = { ...this.state.data };
-      data[input.name] = input.value;
-    }
+    data = { ...this.state.data };
+    data[input.name] = input.value;
 
     const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
@@ -150,16 +134,20 @@ class Form extends Component {
     );
   }
 
-  renderDatePicker(name, label, funcName) {
+  renderDatePicker(name, label, span, funcName) {
     const { startDate, endDate } = this.state;
     let value;
     name === "startDate" ? (value = startDate) : (value = endDate);
 
     return (
-      <div className="col-md-12 mt-4">
-        <label htmlFor={name}>
-          <strong>{label}</strong>
-        </label>
+      <React.Fragment>
+        <span
+          className="input-group-text input-group-prepend"
+          id="basic-addon1"
+        >
+          {span}
+        </span>
+
         <DateTime
           defaultValue={value}
           viewMode="days"
@@ -169,7 +157,7 @@ class Form extends Component {
           onChange={funcName}
           closeOnSelect={true}
         />
-      </div>
+      </React.Fragment>
     );
   }
 }

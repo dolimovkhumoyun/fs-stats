@@ -239,3 +239,8 @@ td.rdtYear:hover {
 .multiselect {
   height: 20vh;
 }
+
+.table-fixed {
+  height: 70vh;
+  overflow: auto;
+}

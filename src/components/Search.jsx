@@ -7,11 +7,14 @@ import _ from "lodash";
 
 import "react-web-tabs/dist/react-web-tabs.css";
 import "../css/search.css";
-import { getData, getData1 } from "../service/data";
+import { getData1 } from "../service/data";
 import MoreBtn from "./common/moreButton";
+import io from "socket.io-client";
 
 //  Search Bar
 class Search extends Component {
+  socket = io("192.168.1.31:8878/api");
+
   state = {
     request: [],
     options: [],
@@ -19,8 +22,13 @@ class Search extends Component {
   };
 
   componentDidMount() {
-    const request = getData();
-    this.setState({ request });
+    this.socket.once("connect", function() {
+      this.on("search", function(data) {
+        console.log(data);
+      });
+    });
+    // const request = getData();
+    // this.setState({ request });
   }
 
   handleOptionSelect = option => {
@@ -50,8 +58,10 @@ class Search extends Component {
       <React.Fragment>
         <NavBar />
         <div className="row">
-          <div className="col-md-2 mw-30 rounded-sm searchBar shadow">
-            <SearchBar callBack={this.callBack} />
+          <div className="col-md-4 mw-30 rounded-sm searchBar shadow">
+            <h1 className="mt-4">Filter</h1>
+            <hr />
+            <SearchBar callBack={this.callBack} socket={this.socket} />
           </div>
           <div className=" col-md-10 mt-4">
             <Tabs

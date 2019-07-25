@@ -4,11 +4,13 @@ import TableBody from "./tableBody";
 
 const Table = ({ columns, data }) => {
   return (
-    <table className="table table-hover">
-      <caption>List of users</caption>
-      <TableHeader columns={columns} />
-      <TableBody data={data} columns={columns} />
-    </table>
+    <div className="table-fixed">
+      <table className="table table-hover ">
+        <caption>List of users</caption>
+        <TableHeader columns={columns} />
+        <TableBody data={data} columns={columns} />
+      </table>
+    </div>
   );
 };
 
