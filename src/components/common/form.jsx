@@ -19,7 +19,6 @@ class Form extends Component {
 
     const errors = {};
     for (let item of error.details) errors[item.path[0]] = item.message;
-
     return errors;
   };
 
@@ -45,7 +44,6 @@ class Form extends Component {
     e.preventDefault();
 
     const errors = this.validate();
-
     this.setState({ errors: errors || {} });
     if (errors) return;
     // console.log(errors);

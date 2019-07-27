@@ -1,18 +1,21 @@
 import React, { Component } from "react";
 import Table from "./table";
+import _ from "lodash";
 
 class RegionsTable extends Component {
   columns = [
-    { path: "_id", label: "#" },
+    { path: "id", label: "#" },
     { path: "camera", label: "Camera" },
-    { path: "date", label: "Date" },
-    { path: "carNumber", label: "Car Number" }
+    { path: "the_date", label: "Date" },
+    { path: "car_number", label: "Car Number" }
   ];
 
   render() {
-    const { request } = this.props;
+    const { request, regionId } = this.props;
+    var data = [];
+    data = _.filter(request, { id: regionId });
 
-    return <Table columns={this.columns} data={request} />;
+    return <Table columns={this.columns} data={data} />;
   }
 }
 

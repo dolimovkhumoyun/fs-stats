@@ -1,15 +1,18 @@
 import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
-import { Tabs, Tab, TabPanel, TabList } from "react-web-tabs";
+// import { Tabs, Tab, TabPanel, TabList } from "react-web-tabs";
 import RegionsTable from "./common/regionsTable";
+import { Tabs } from "antd";
 import _ from "lodash";
 
 import "react-web-tabs/dist/react-web-tabs.css";
 import "../css/search.css";
 import { getData1 } from "../service/data";
-import MoreBtn from "./common/moreButton";
+// import MoreBtn from "./common/moreButton";
 import io from "socket.io-client";
+import "antd/dist/antd.css";
+import "react-toastify/dist/ReactToastify.min.css";
 
 //  Search Bar
 class Search extends Component {
@@ -20,15 +23,18 @@ class Search extends Component {
     options: [],
     selectedOption: ""
   };
-
+  request = [];
   componentDidMount() {
+    const that = this;
     this.socket.once("connect", function() {
+      that.request = [];
       this.on("search", function(data) {
         console.log(data);
+        that.request.push(data);
+
+        that.setState({ request: that.request });
       });
     });
-    // const request = getData();
-    // this.setState({ request });
   }
 
   handleOptionSelect = option => {
@@ -42,6 +48,7 @@ class Search extends Component {
         ? ""
         : dataFromChild[0].id + "t"
     });
+    this.request = [];
   };
 
   handleMore(request) {
@@ -53,43 +60,25 @@ class Search extends Component {
   }
 
   render() {
-    const { options, selectedOption, request } = this.state;
+    const { options, request } = this.state;
+    const { TabPane } = Tabs;
     return (
       <React.Fragment>
         <NavBar />
         <div className="row">
-          <div className="col-md-4 mw-30 rounded-sm searchBar shadow">
+          <div className="col-md-3 mw-30 rounded-sm searchBar shadow">
             <h1 className="mt-4">Filter</h1>
             <hr />
             <SearchBar callBack={this.callBack} socket={this.socket} />
           </div>
-          <div className=" col-md-10 mt-4">
-            <Tabs
-              defaultTab={selectedOption}
-              vertical
-              focusable
-              onChange={tabId => {
-                this.setState({ selectedOption: tabId });
-              }}
-            >
-              <TabList>
-                {options.map(option => (
-                  <Tab key={option.id} tabFor={option.id + "t"}>
-                    {option.name}
-                  </Tab>
-                ))}
-              </TabList>
+          <div className="col-md-9 mt-4">
+            <Tabs defaultActiveKey="1" tabPosition="left">
               {options.map(option => (
-                <TabPanel
-                  key={option.id}
-                  tabId={option.id + "t"}
-                  className="mt-4"
-                  style={{ height: "60vh", width: "100vw" }}
-                >
-                  <h5 className="m-4">{option.name}</h5>
-                  <RegionsTable request={request} />
-                  <MoreBtn onClick={() => this.handleMore(request)} />
-                </TabPanel>
+                <TabPane tab={option.label} key={option.value}>
+                  <div className="mt-4">
+                    <RegionsTable request={request} regionId={option.value} />
+                  </div>
+                </TabPane>
               ))}
             </Tabs>
           </div>

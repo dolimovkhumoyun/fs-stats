@@ -14,14 +14,20 @@ class TableBody extends Component {
 
   render() {
     const { data, columns } = this.props;
+    // const data1 = data.data;
+    var req = [];
+
+    if (data === undefined || data.length === 0) {
+    } else {
+      if (data[0].data !== -1) req = data[0].data;
+    }
+
     return (
       <tbody>
-        {data.map(item => (
-          <tr key={item._id}>
+        {req.map(item => (
+          <tr>
             {columns.map(column => (
-              <td key={this.createKey(item, column)}>
-                {this.renderCell(item, column)}
-              </td>
+              <td>{this.renderCell(item, column)}</td>
             ))}
           </tr>
         ))}
