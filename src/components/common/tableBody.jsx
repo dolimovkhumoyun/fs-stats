@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import _ from "lodash";
 
 class TableBody extends Component {
-  renderCell = (item, column) => {
-    if (column.content) return column.content(item);
+  renderCell = (item, column, index) => {
+    if (column.content) return column.content(index, item);
 
     return _.get(item, column.path);
   };
@@ -24,10 +24,12 @@ class TableBody extends Component {
 
     return (
       <tbody>
-        {req.map(item => (
-          <tr>
-            {columns.map(column => (
-              <td>{this.renderCell(item, column)}</td>
+        {req.map((item, index) => (
+          <tr key={index}>
+            {columns.map((column, col_index) => (
+              <td key={col_index}>
+                {this.renderCell(item, column, index + 1)}
+              </td>
             ))}
           </tr>
         ))}

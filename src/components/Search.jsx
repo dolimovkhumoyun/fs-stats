@@ -3,12 +3,12 @@ import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
 // import { Tabs, Tab, TabPanel, TabList } from "react-web-tabs";
 import RegionsTable from "./common/regionsTable";
-import { Tabs } from "antd";
+import { Tabs, Button } from "antd";
 import _ from "lodash";
 
 import "react-web-tabs/dist/react-web-tabs.css";
 import "../css/search.css";
-import { getData1 } from "../service/data";
+
 // import MoreBtn from "./common/moreButton";
 import io from "socket.io-client";
 import "antd/dist/antd.css";
@@ -21,9 +21,12 @@ class Search extends Component {
   state = {
     request: [],
     options: [],
-    selectedOption: ""
+    selectedOption: "",
+    loading: false,
+    iconLoading: false
   };
   request = [];
+
   componentDidMount() {
     const that = this;
     this.socket.once("connect", function() {
@@ -51,13 +54,13 @@ class Search extends Component {
     this.request = [];
   };
 
-  handleMore(request) {
-    console.log("Clicked");
-    const updatedReq = getData1();
-    const newData = _.union(request, updatedReq);
-    // console.log(newData);
-    this.setState({ request: newData });
-  }
+  enterLoading = () => {
+    this.setState({ loading: true });
+  };
+
+  endLoading = () => {
+    this.setState({ loading: false });
+  };
 
   render() {
     const { options, request } = this.state;
@@ -75,8 +78,18 @@ class Search extends Component {
             <Tabs defaultActiveKey="1" tabPosition="left">
               {options.map(option => (
                 <TabPane tab={option.label} key={option.value}>
-                  <div className="mt-4">
+                  <div className="mt-4 ml-4  ">
                     <RegionsTable request={request} regionId={option.value} />
+                    <div className="col-md-6">
+                      <Button
+                        type="primary"
+                        loading={this.state.loading}
+                        onClick={this.enterLoading}
+                        block
+                      >
+                        More ...
+                      </Button>
+                    </div>
                   </div>
                 </TabPane>
               ))}

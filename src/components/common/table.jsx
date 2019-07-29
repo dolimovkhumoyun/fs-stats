@@ -6,7 +6,6 @@ const Table = ({ columns, data }) => {
   return (
     <div className="table-fixed">
       <table className="table table-hover ">
-        <caption>List of users</caption>
         <TableHeader columns={columns} />
         <TableBody data={data} columns={columns} />
       </table>

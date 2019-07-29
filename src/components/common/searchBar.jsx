@@ -2,13 +2,13 @@ import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
 import Select from "react-select";
-// import { RadioGroup, RadioButton } from "react-radio-buttons";
 import { DatePicker, Input, Icon, Radio } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 
 import moment from "moment";
 import _ from "lodash";
 import "antd/dist/antd.css";
+import MoreButton from "./moreButton";
 
 class SearchBar extends Form {
   state = {
@@ -19,9 +19,9 @@ class SearchBar extends Form {
     endDate: moment()
       .endOf("day")
       .format("YYYY-MM-DD HH:mm:ss"),
-    errors: {},
     optionsRegion: [],
-    optionsPosts: []
+    optionsPosts: [],
+    errors: {}
   };
 
   schema = {
@@ -56,6 +56,7 @@ class SearchBar extends Form {
           }
         });
 
+        options = [{ value: "-1", label: "All" }, ...options];
         that.setState({ optionsRegion: options });
       });
       this.on("err", function(data) {
@@ -67,23 +68,33 @@ class SearchBar extends Form {
   doSubmit = async () => {
     const { socket } = this.props;
     const { data, startDate, endDate } = this.state;
-    var { direction } = data;
+    var { direction, posts } = data;
     this.props.callBack(direction);
-
     direction = _.map(direction, "value");
+    var ips = _.map(posts, "value");
+
     let post = {};
     post = { ...this.state.data };
     post.startDate = startDate;
     post.endDate = endDate;
     post.direction = direction;
-    // console.log(post.direction);
+    post.posts = ips;
     socket.emit("search", post);
   };
 
   handleChange = selectedOptions => {
     const dirs = _.map(selectedOptions, "value");
     const { posts, carNumber, type } = this.state.data;
-    const direction = selectedOptions;
+    const { optionsRegion } = this.state;
+    var direction = selectedOptions;
+    const indexOfAll = _.findIndex(selectedOptions, { value: "-1" });
+    if (dirs[indexOfAll]) {
+      direction = optionsRegion;
+
+      direction = _.filter(direction, function(o) {
+        return o.value > 0 && !o.isDisabled;
+      });
+    }
 
     this.setState({
       data: { direction: direction, posts, carNumber, type }
@@ -122,6 +133,7 @@ class SearchBar extends Form {
     const { value } = e.target;
     this.setState({ data: { type: value, direction, posts, carNumber } });
   };
+
   // Event fired when Date Range has been selected
   onOk = range => {
     const startDate = moment(range[0]).format("YYYY-MM-DD HH:mm:ss");
@@ -162,13 +174,13 @@ class SearchBar extends Form {
         <form onSubmit={this.handleSubmit} className="mt-4">
           <div className="form-group col-md-12">
             <Radio.Group
-              defaultValue="all"
+              defaultValue="-1"
               size="large"
               onChange={this.handleRadioButtonChange}
             >
-              <Radio.Button value="all">All</Radio.Button>
-              <Radio.Button value="wanted">Wanted</Radio.Button>
-              <Radio.Button value="notwanted">Not Wanted</Radio.Button>
+              <Radio.Button value="-1">All</Radio.Button>
+              <Radio.Button value="1">Wanted</Radio.Button>
+              <Radio.Button value="0">Not Wanted</Radio.Button>
             </Radio.Group>
           </div>
           <div className="form-group ">
@@ -185,8 +197,14 @@ class SearchBar extends Form {
               className="col-md-12"
               defaultValue={[moment(startDate), moment(endDate)]}
               name={["startDate", "endDate"]}
+              onChange={this.validateRange}
               onOk={this.onOk}
             />
+            {this.error && (
+              <div className="alert alert-danger col-md-12 mt-2">
+                {this.error}
+              </div>
+            )}
           </div>
           <div className="form-group col-md-12">
             <label htmlFor="">
@@ -212,9 +230,10 @@ class SearchBar extends Form {
               isMulti
               closeMenuOnSelect={false}
               inputProps={{ id: "fieldId" }}
-              // className=""
               clearable={false}
               required={true}
+              components={{ MoreButton }}
+              value={this.state.data.direction}
             />
           </div>
           <div className="form-group col-md-12">
