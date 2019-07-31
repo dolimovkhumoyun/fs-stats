@@ -16,11 +16,14 @@ code {
  * https://github.com/YouCanBookMe/react-datetime
  */
 
-.table-fixed {
+th {
+  position: block;
+}
+
+t tbody {
   height: 70vh;
   overflow: auto;
 }
-
 .ant-calendar-ok-btn {
   color: white !important;
 }

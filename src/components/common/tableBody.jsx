@@ -22,19 +22,31 @@ class TableBody extends Component {
       if (data[0].data !== -1) req = data[0].data;
     }
 
-    return (
-      <tbody>
-        {req.map((item, index) => (
-          <tr key={index}>
-            {columns.map((column, col_index) => (
-              <td key={col_index}>
-                {this.renderCell(item, column, index + 1)}
-              </td>
-            ))}
+    if (req.length > 0) {
+      return (
+        <tbody>
+          {req.map((item, index) => (
+            <tr key={index}>
+              {columns.map((column, col_index) => (
+                <td key={col_index}>
+                  {this.renderCell(item, column, index + 1)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      );
+    } else {
+      return (
+        <tbody>
+          <tr>
+            <td>
+              <img src="../../css/nodata.svg" alt="" />
+            </td>
           </tr>
-        ))}
-      </tbody>
-    );
+        </tbody>
+      );
+    }
   }
 }
 

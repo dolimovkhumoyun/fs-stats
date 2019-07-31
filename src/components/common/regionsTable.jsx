@@ -36,11 +36,12 @@ class RegionsTable extends Component {
   };
 
   render() {
-    const { request, regionId } = this.props;
+    const { request, regionId, count } = this.props;
     var data = [];
     data = _.filter(request, { id: regionId });
 
-    return <Table columns={this.columns} data={data} />;
+    if (count !== undefined) var total = count.count;
+    return <Table columns={this.columns} data={data} total={total} />;
   }
 }
 

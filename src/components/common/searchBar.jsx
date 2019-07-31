@@ -68,8 +68,8 @@ class SearchBar extends Form {
   doSubmit = async () => {
     const { socket } = this.props;
     const { data, startDate, endDate } = this.state;
-    var { direction, posts } = data;
-    this.props.callBack(direction);
+    var { carNumber, direction, posts, type } = data;
+    this.props.callBack(direction, posts, startDate, endDate, type, carNumber);
     direction = _.map(direction, "value");
     var ips = _.map(posts, "value");
 
