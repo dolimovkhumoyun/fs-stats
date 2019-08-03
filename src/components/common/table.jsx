@@ -3,7 +3,7 @@ import TableHeader from "./tableHeader";
 import TableBody from "./tableBody";
 import _ from "lodash";
 
-const Table = ({ columns, data, total }) => {
+const Table = ({ columns, data, total, loadImage }) => {
   if (data !== undefined && !_.isEmpty(data))
     var totalData = data[0].data.length;
   return (
@@ -11,10 +11,10 @@ const Table = ({ columns, data, total }) => {
       <p>
         Showing <strong>{totalData}</strong> out of <strong>{total}</strong>
       </p>
-      <div className="tableFixHead">
-        <table className="table table-hover ">
+      <div className="table-responsive">
+        <table className="table table-hover table-striped header-fixed  ">
           <TableHeader columns={columns} />
-          <TableBody data={data} columns={columns} />
+          <TableBody data={data} columns={columns} loadImage={loadImage} />
         </table>
       </div>
     </React.Fragment>

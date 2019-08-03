@@ -2,15 +2,18 @@ import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
 import "react-toastify/dist/ReactToastify.min.css";
-import MoreButton from "./common/moreButton";
 import RegionsTable from "./common/regionsTable";
 import _ from "lodash";
 import "../css/search.css";
 
-import { Tabs, Button, Tag, Badge } from "antd";
+import animateScrollTo from "animated-scroll-to";
+
+import { Tabs, Button } from "antd";
 import "antd/dist/antd.css";
 
 import io from "socket.io-client";
+import Lightbox from "react-image-lightbox";
+import "react-image-lightbox/style.css";
 
 //  Search Bar
 class Search extends Component {
@@ -23,13 +26,16 @@ class Search extends Component {
       type: "",
       carNumber: "",
       startDate: "",
-      endDate: ""
+      endDate: "",
+      spr: "",
+      img: ""
     },
     request: [],
     count: [],
     selectedOption: "",
     loading: false,
-    iconLoading: false
+    iconLoading: false,
+    visible: false
   };
 
   componentDidMount() {
@@ -43,14 +49,27 @@ class Search extends Component {
         if (index !== -1) {
           if (!_.isEmpty(data.data)) {
             data.data.map(d => {
-              that.request[index].data.push(d);
+              return that.request[index].data.push(d);
             });
           }
         } else {
           that.request.push(data);
         }
 
-        that.setState({ request: that.request, loading: false });
+        that.setState({
+          request: that.request,
+          loading: false,
+          loadingSearchButton: false
+        });
+
+        let tableBody = document.getElementsByClassName("hello");
+        const options = {
+          speed: 6500,
+          element: document.querySelector(".hello"),
+          offset: tableBody[0].scrollHeight - tableBody[0].scrollTop
+        };
+
+        animateScrollTo(tableBody[0].scrollHeight, options);
       });
       this.on("count", function(data) {
         const indexCount = _.findIndex(count, { id: data.id });
@@ -69,21 +88,25 @@ class Search extends Component {
     this.setState({ selectedOption: option });
   };
 
-  callBack = (direction, posts, startDate, endDate, type, carNumber) => {
+  callBack = (direction, posts, startDate, endDate, type, carNumber, spr) => {
     this.setState({
-      data: { direction, posts, startDate, endDate, type, carNumber }
+      data: { direction, posts, startDate, endDate, type, carNumber, spr }
     });
     this.request = [];
   };
 
   enterLoading = region => {
-    const { carNumber, type, startDate, endDate } = this.state.data;
+    // tableBody[0].scrollTop = tableBody[0].scrollHeight + 1000;
+    // console.log("Height  " + tableBody[0].scrollHeight);
+    // console.log("Scroll  " + tableBody[0].scrollTop);
+
+    const { carNumber, type, startDate, endDate, spr } = this.state.data;
     const regionData = _.filter(this.state.request, function(o) {
       return o.id === region;
     });
     const offset = regionData[0].data.length;
     const posts = _.filter(this.state.data.posts, function(o) {
-      return o.id == region;
+      return o.id === region;
     });
     const postsIp = _.map(posts, "value");
 
@@ -94,7 +117,8 @@ class Search extends Component {
       carNumber,
       type,
       startDate,
-      endDate
+      endDate,
+      spr
     };
     this.socket.emit("search", data);
 
@@ -120,8 +144,69 @@ class Search extends Component {
     }
   };
 
+  handlingMoreDisabled = option => {
+    const { request } = this.state;
+    const temp = request[_.findIndex(request, { id: option.value })];
+    if (temp !== undefined) {
+      if (temp.data.length === 0) return true;
+      else return false;
+    } else return true;
+
+    // const temp = _.isEmpty(_.find(req));
+  };
+
+  loadImage = item => {
+    // evnt_id   ip  the_date
+    const oldImg = this.state.img;
+    // console.log(item.event_id, img.event_id);
+    // if (item.event_id === img.event_id) return true;
+    var that = this;
+    let data = {
+      event_id: item.event_id,
+      ip: item.ip,
+      the_date: item.the_date
+    };
+    var tok = {
+      username: "Admin",
+      password: "admin12345"
+    };
+    this.socket.emit("login", tok);
+
+    this.socket.once("login", function(data) {
+      console.log(data);
+    });
+
+    this.socket.once("image", function(data) {
+      if (oldImg !== undefined && oldImg.event_id === data.event_id) {
+        that.setState({ visible: true });
+      } else {
+        const img = "data:image/jpeg;base64," + data.data[0].car_photo;
+        data.data[0].car_photo = img;
+        that.setState({ img: data, visible: true });
+      }
+    });
+  };
+
+  CheckSearchBar() {
+    console.log("Hello");
+  }
+
+  handleOk = e => {
+    console.log(e);
+    this.setState({
+      visible: false
+    });
+  };
+
+  handleCancel = e => {
+    console.log(e);
+    this.setState({
+      visible: false
+    });
+  };
+
   render() {
-    const { data, request, count } = this.state;
+    const { data, request, count, visible } = this.state;
     const { direction } = data;
     const { TabPane } = Tabs;
 
@@ -132,9 +217,13 @@ class Search extends Component {
           <div className="col-md-3 mw-30 rounded-sm searchBar shadow">
             <h1 className="mt-4">Filter</h1>
             <hr />
-            <SearchBar callBack={this.callBack} socket={this.socket} />
+            <SearchBar
+              callBack={this.callBack}
+              socket={this.socket}
+              check={this.CheckSearchBar}
+            />
           </div>
-          <div className="col-md-9 ">
+          <div className="col-md-9 mt-4">
             <Tabs defaultActiveKey="1" tabPosition="left" size="large">
               {direction.map(option => (
                 <TabPane
@@ -147,15 +236,17 @@ class Search extends Component {
                       request={request}
                       regionId={option.value}
                       count={count[_.findIndex(count, { id: option.value })]}
+                      loadImage={this.loadImage}
                     />
-                    <div className="mt-4">
+                    <div className="">
                       <Button
                         type="primary"
                         loading={this.state.loading}
                         onClick={() => this.enterLoading(option.value)}
+                        disabled={this.handlingMoreDisabled(option)}
                         block
                       >
-                        More ...
+                        Load More
                       </Button>
                     </div>
                   </div>
@@ -164,6 +255,13 @@ class Search extends Component {
             </Tabs>
           </div>
         </div>
+
+        {visible && (
+          <Lightbox
+            mainSrc={this.state.img.data[0].car_photo}
+            onCloseRequest={() => this.setState({ visible: false })}
+          />
+        )}
       </React.Fragment>
     );
   }

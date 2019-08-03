@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import _ from "lodash";
+import { Empty } from "antd";
 
 class TableBody extends Component {
   renderCell = (item, column, index) => {
@@ -13,7 +14,7 @@ class TableBody extends Component {
   };
 
   render() {
-    const { data, columns } = this.props;
+    const { data, columns, loadImage } = this.props;
     // const data1 = data.data;
     var req = [];
 
@@ -24,9 +25,9 @@ class TableBody extends Component {
 
     if (req.length > 0) {
       return (
-        <tbody>
+        <tbody className="hello">
           {req.map((item, index) => (
-            <tr key={index}>
+            <tr key={index} onDoubleClick={() => loadImage(item)}>
               {columns.map((column, col_index) => (
                 <td key={col_index}>
                   {this.renderCell(item, column, index + 1)}
@@ -39,9 +40,19 @@ class TableBody extends Component {
     } else {
       return (
         <tbody>
-          <tr>
-            <td>
-              <img src="../../css/nodata.svg" alt="" />
+          <tr
+            style={{
+              backgroundColor: "white",
+              marginTop: "10%"
+            }}
+          >
+            <td style={{ borderTop: "none" }}>
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              {/* <img
+                src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
+                style={{ marginBottom: "10%", marginLeft: "20%" }}
+                alt="loading..."
+              /> */}
             </td>
           </tr>
         </tbody>

@@ -1,8 +1,9 @@
 import React from "react";
-import Joi from "joi-browser";
 import Form from "./common/form";
-import "../css/login.css";
+import Joi from "joi-browser";
 import { toast, ToastContainer } from "react-toastify";
+
+import "../css/login.css";
 
 class Login extends Form {
   state = {

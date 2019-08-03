@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import Table from "./table";
 import _ from "lodash";
-import MoreButton from "./moreButton";
 
 class RegionsTable extends Component {
   columns = [
@@ -15,33 +14,23 @@ class RegionsTable extends Component {
     },
     { path: "camera", label: "Camera" },
     { path: "the_date", label: "Date" },
-    { path: "car_number", label: "Car Number" },
-    {
-      path: "more",
-      label: "More",
-      content: (index, item) => {
-        return (
-          <MoreButton
-            classes="btn btn-success btn-sm col-md-8"
-            label="Info"
-            onClick={() => this.onClick(item)}
-          />
-        );
-      }
-    }
+    { path: "car_number", label: "Car Number" }
   ];
 
-  onClick = item => {
-    console.log(item.event_id);
-  };
-
   render() {
-    const { request, regionId, count } = this.props;
+    const { request, regionId, count, loadImage } = this.props;
     var data = [];
     data = _.filter(request, { id: regionId });
 
     if (count !== undefined) var total = count.count;
-    return <Table columns={this.columns} data={data} total={total} />;
+    return (
+      <Table
+        columns={this.columns}
+        data={data}
+        total={total}
+        loadImage={loadImage}
+      />
+    );
   }
 }
 

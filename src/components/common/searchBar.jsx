@@ -2,7 +2,7 @@ import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
 import Select from "react-select";
-import { DatePicker, Input, Icon, Radio } from "antd";
+import { DatePicker, Input, Icon, Radio, Button } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 
 import moment from "moment";
@@ -21,17 +21,16 @@ class SearchBar extends Form {
       .format("YYYY-MM-DD HH:mm:ss"),
     optionsRegion: [],
     optionsPosts: [],
-    errors: {}
+    errors: {},
+    isDisabled: true
   };
 
   schema = {
     direction: Joi.required().label("Direction"),
     posts: Joi.required().label("Posts"),
     type: Joi.required().label("Type"),
-    carNumber: Joi.string()
-      .regex(/^[A-Za-z*_%\d]+$/g)
-      .required()
-      .label("Car Number")
+    carNumber: Joi.string().label("Car Number")
+    // .regex(/^[A-Za-z*_%\d]+$/g)
   };
 
   getOptions() {
@@ -54,6 +53,7 @@ class SearchBar extends Form {
             option.isDisabled = option.isoffline;
             delete option.isoffline;
           }
+          return true;
         });
 
         options = [{ value: "-1", label: "All" }, ...options];
@@ -69,7 +69,17 @@ class SearchBar extends Form {
     const { socket } = this.props;
     const { data, startDate, endDate } = this.state;
     var { carNumber, direction, posts, type } = data;
-    this.props.callBack(direction, posts, startDate, endDate, type, carNumber);
+    var spr = _.sortedUniq(_.map(posts, "id"));
+
+    this.props.callBack(
+      direction,
+      posts,
+      startDate,
+      endDate,
+      type,
+      carNumber,
+      spr
+    );
     direction = _.map(direction, "value");
     var ips = _.map(posts, "value");
 
@@ -79,10 +89,20 @@ class SearchBar extends Form {
     post.endDate = endDate;
     post.direction = direction;
     post.posts = ips;
+    post.spr = spr; // selected Posts of Regions
     socket.emit("search", post);
   };
 
-  handleChange = selectedOptions => {
+  handleRegionsChange = selectedOptions => {
+    console.log(_.isEmpty(this.state.startDate));
+    if (_.isEmpty(selectedOptions)) {
+      this.setState({ optionsPosts: selectedOptions, isDisabled: true });
+    } else if (!_.isEmpty(selectedOptions) && _.isEmpty(this.state.startDate))
+      this.setState({ isDisabled: true });
+    else if (_.isEmpty(this.state.startDate)) {
+      this.setState({ isDisabled: true });
+    } else this.setState({ isDisabled: false });
+
     const dirs = _.map(selectedOptions, "value");
     const { posts, carNumber, type } = this.state.data;
     const { optionsRegion } = this.state;
@@ -99,12 +119,15 @@ class SearchBar extends Form {
     this.setState({
       data: { direction: direction, posts, carNumber, type }
     });
+
     if (direction === null) {
       this.setState({ optionsPosts: [] });
       return;
     }
 
-    this.props.socket.emit("posts", dirs);
+    const regions = _.map(direction, "value");
+    this.props.socket.emit("posts", regions);
+
     const that = this;
     this.props.socket.once("posts", function(data) {
       const optionsPosts = data.data;
@@ -113,8 +136,11 @@ class SearchBar extends Form {
           option.isDisabled = option.isoffline;
           delete option.isoffline;
         }
+        return true;
       });
-
+      // // console.log(regions.length);
+      // if (regions.length == 0) {
+      //   that.setState({ optionsPosts: "" });
       that.setState({ optionsPosts });
     });
   };
@@ -132,6 +158,13 @@ class SearchBar extends Form {
     const { direction, posts, carNumber } = this.state.data;
     const { value } = e.target;
     this.setState({ data: { type: value, direction, posts, carNumber } });
+  };
+
+  handleRangeChange = range => {
+    if (_.isEmpty(range))
+      this.setState({ startDate: null, endDate: null, isDisabled: true });
+    else if (!_.isEmpty(this.state.data.direction))
+      this.setState({ isDisabled: false });
   };
 
   // Event fired when Date Range has been selected
@@ -163,7 +196,13 @@ class SearchBar extends Form {
   };
 
   render() {
-    const { optionsRegion, optionsPosts, startDate, endDate } = this.state;
+    const {
+      optionsRegion,
+      optionsPosts,
+      startDate,
+      endDate,
+      isDisabled
+    } = this.state;
     const { carNumber } = this.state.data;
 
     const { RangePicker } = DatePicker;
@@ -197,7 +236,7 @@ class SearchBar extends Form {
               className="col-md-12"
               defaultValue={[moment(startDate), moment(endDate)]}
               name={["startDate", "endDate"]}
-              onChange={this.validateRange}
+              onChange={this.handleRangeChange}
               onOk={this.onOk}
             />
             {this.error && (
@@ -226,7 +265,7 @@ class SearchBar extends Form {
             </label>
             <Select
               options={optionsRegion}
-              onChange={this.handleChange}
+              onChange={this.handleRegionsChange}
               isMulti
               closeMenuOnSelect={false}
               inputProps={{ id: "fieldId" }}
@@ -248,7 +287,12 @@ class SearchBar extends Form {
               inputProps={{ id: "fieldId" }}
             />
           </div>
-          {this.renderButton("submit")}
+          <div className="col-md-4">
+            <Button type="primary" htmlType="submit" disabled={isDisabled}>
+              Search
+            </Button>
+          </div>
+          {/* {this.renderButton("submit")} */}
         </form>
 
         <div>
