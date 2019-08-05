@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import _ from "lodash";
-import { Empty } from "antd";
+import { Empty, Spin, Alert } from "antd";
+import { regExpLiteral } from "@babel/types";
 
 class TableBody extends Component {
   renderCell = (item, column, index) => {
@@ -37,7 +38,7 @@ class TableBody extends Component {
           ))}
         </tbody>
       );
-    } else {
+    } else if ((data[0] !== undefined && req.length === 0) || req === -1) {
       return (
         <tbody>
           <tr
@@ -53,6 +54,23 @@ class TableBody extends Component {
                 style={{ marginBottom: "10%", marginLeft: "20%" }}
                 alt="loading..."
               /> */}
+            </td>
+          </tr>
+        </tbody>
+      );
+    } else if (data[0] === undefined) {
+      return (
+        <tbody>
+          <tr
+            style={{
+              backgroundColor: "white",
+              marginTop: "10%"
+            }}
+          >
+            <td style={{ borderTop: "none" }}>
+              <div className="spinner">
+                <Spin size="large" />
+              </div>
             </td>
           </tr>
         </tbody>

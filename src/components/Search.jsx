@@ -1,23 +1,46 @@
 import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
-import "react-toastify/dist/ReactToastify.min.css";
 import RegionsTable from "./common/regionsTable";
 import _ from "lodash";
+import { toast, ToastContainer } from "react-toastify";
+
 import "../css/search.css";
+import "react-toastify/dist/ReactToastify.min.css";
 
 import animateScrollTo from "animated-scroll-to";
 
 import { Tabs, Button } from "antd";
 import "antd/dist/antd.css";
 
-import io from "socket.io-client";
+// import io from "socket.io-client";
+
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 
 //  Search Bar
 class Search extends Component {
-  socket = io("192.168.1.31:8878/api");
+  // socket;
+
+  constructor(props) {
+    super(props);
+    // socket = io("192.168.1.31:8878/api");
+    this.socket = this.props.socket;
+    this.token = localStorage.getItem("token");
+
+    if (!this.token) {
+      this.props.history.push("/login");
+      toast.error("Please, login first.");
+    }
+
+    this.props.socket.on("err", function(data) {
+      console.log(data)
+      if (data.status === 401) {
+        localStorage.removeItem("token");
+        props.history.push("/");
+      }
+    });
+  }
 
   state = {
     data: {
@@ -39,12 +62,13 @@ class Search extends Component {
   };
 
   componentDidMount() {
+    // const token = localStorage.getItem("token");
     const that = this;
     var count = [];
-    this.socket.once("connect", function() {
+    this.props.socket.once("connect", function() {
       that.request = [];
 
-      this.on("search", function(data) {
+      that.props.socket.on("search", function(data) {
         const index = _.findIndex(that.request, { id: data.id });
         if (index !== -1) {
           if (!_.isEmpty(data.data)) {
@@ -61,15 +85,16 @@ class Search extends Component {
           loading: false,
           loadingSearchButton: false
         });
-
         let tableBody = document.getElementsByClassName("hello");
-        const options = {
-          speed: 6500,
-          element: document.querySelector(".hello"),
-          offset: tableBody[0].scrollHeight - tableBody[0].scrollTop
-        };
+        if (tableBody[0] !== undefined) {
+          const options = {
+            speed: 6500,
+            element: document.querySelector(".hello"),
+            offset: tableBody[0].scrollHeight - tableBody[0].scrollTop
+          };
 
-        animateScrollTo(tableBody[0].scrollHeight, options);
+          animateScrollTo(tableBody[0].scrollHeight, options);
+        }
       });
       this.on("count", function(data) {
         const indexCount = _.findIndex(count, { id: data.id });
@@ -118,7 +143,8 @@ class Search extends Component {
       type,
       startDate,
       endDate,
-      spr
+      spr,
+      token: localStorage.getItem("token")
     };
     this.socket.emit("search", data);
 
@@ -164,18 +190,10 @@ class Search extends Component {
     let data = {
       event_id: item.event_id,
       ip: item.ip,
-      the_date: item.the_date
+      the_date: item.the_date,
+      token: localStorage.getItem("token")
     };
-    var tok = {
-      username: "Admin",
-      password: "admin12345"
-    };
-    this.socket.emit("login", tok);
-
-    this.socket.once("login", function(data) {
-      console.log(data);
-    });
-
+    this.socket.emit("loadImage", data);
     this.socket.once("image", function(data) {
       if (oldImg !== undefined && oldImg.event_id === data.event_id) {
         that.setState({ visible: true });
@@ -212,6 +230,7 @@ class Search extends Component {
 
     return (
       <React.Fragment>
+        <ToastContainer position="top-center" />
         <NavBar />
         <div className="row">
           <div className="col-md-3 mw-30 rounded-sm searchBar shadow">
@@ -221,6 +240,7 @@ class Search extends Component {
               callBack={this.callBack}
               socket={this.socket}
               check={this.CheckSearchBar}
+              token={this.token}
             />
           </div>
           <div className="col-md-9 mt-4">

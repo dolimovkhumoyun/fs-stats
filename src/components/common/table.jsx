@@ -1,6 +1,7 @@
 import React from "react";
 import TableHeader from "./tableHeader";
 import TableBody from "./tableBody";
+
 import _ from "lodash";
 
 const Table = ({ columns, data, total, loadImage }) => {
@@ -8,9 +9,11 @@ const Table = ({ columns, data, total, loadImage }) => {
     var totalData = data[0].data.length;
   return (
     <React.Fragment>
-      <p>
-        Showing <strong>{totalData}</strong> out of <strong>{total}</strong>
-      </p>
+      {total !== -1 && (
+        <p>
+          Showing <strong>{totalData}</strong> out of <strong>{total}</strong>
+        </p>
+      )}
       <div className="table-responsive">
         <table className="table table-hover table-striped header-fixed  ">
           <TableHeader columns={columns} />

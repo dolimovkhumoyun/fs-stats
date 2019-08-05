@@ -34,38 +34,37 @@ class SearchBar extends Form {
   };
 
   getOptions() {
-    this.props.socket.emit("regions", {});
-    const interval = 6 * 60 * 1000; // 6 minutes
-    setInterval(() => {
-      this.props.socket.emit("regions", {});
+    const token = localStorage.getItem("token");
+    this.props.socket.emit("regions", { token });
+    const interval = 60 * 60 * 1000; // 6 minutes
+    const intervarlRegions = setInterval(() => {
+      this.props.socket.emit("regions", { token });
     }, interval);
   }
 
   componentDidMount() {
-    const { socket } = this.props;
     var that = this; // For using this inside other functions
-    socket.once("connect", function(data) {
-      that.getOptions();
-      this.on("regions", data => {
-        var options = data.data;
-        options.map(option => {
-          if (option.hasOwnProperty("isoffline")) {
-            option.isDisabled = option.isoffline;
-            delete option.isoffline;
-          }
-          return true;
-        });
+    // socket.once("connect", function(data) {
+    this.getOptions();
+    this.props.socket.on("regions", data => {
+      var options = data.data;
+      options.map(option => {
+        if (option.hasOwnProperty("isoffline")) {
+          option.isDisabled = option.isoffline;
+          delete option.isoffline;
+        }
+        return true;
+      });
 
-        options = [{ value: "-1", label: "All" }, ...options];
-        that.setState({ optionsRegion: options });
-      });
-      this.on("err", function(data) {
-        console.log(data);
-      });
+      options = [{ value: "-1", label: "All" }, ...options];
+      that.setState({ optionsRegion: options });
     });
+
+    // });
   }
 
   doSubmit = async () => {
+    const token = localStorage.getItem("token");
     const { socket } = this.props;
     const { data, startDate, endDate } = this.state;
     var { carNumber, direction, posts, type } = data;
@@ -90,11 +89,12 @@ class SearchBar extends Form {
     post.direction = direction;
     post.posts = ips;
     post.spr = spr; // selected Posts of Regions
+    post.token = token;
     socket.emit("search", post);
+    this.setState({ isDisabled: true });
   };
 
   handleRegionsChange = selectedOptions => {
-    console.log(_.isEmpty(this.state.startDate));
     if (_.isEmpty(selectedOptions)) {
       this.setState({ optionsPosts: selectedOptions, isDisabled: true });
     } else if (!_.isEmpty(selectedOptions) && _.isEmpty(this.state.startDate))
@@ -124,9 +124,11 @@ class SearchBar extends Form {
       this.setState({ optionsPosts: [] });
       return;
     }
-
     const regions = _.map(direction, "value");
-    this.props.socket.emit("posts", regions);
+    const token = localStorage.getItem("token");
+    let data = { regions, token };
+    // regions["token"] = localStorage.getItem("token");
+    this.props.socket.emit("posts", data);
 
     const that = this;
     this.props.socket.once("posts", function(data) {
