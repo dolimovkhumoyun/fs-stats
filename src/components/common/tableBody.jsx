@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import _ from "lodash";
+import { Empty, Spin } from "antd";
 
 class TableBody extends Component {
-  renderCell = (item, column) => {
-    if (column.content) return column.content(item);
+  renderCell = (item, column, index) => {
+    if (column.content) return column.content(index, item);
 
     return _.get(item, column.path);
   };
@@ -13,7 +14,7 @@ class TableBody extends Component {
   };
 
   render() {
-    const { data, columns } = this.props;
+    const { data, columns, loadImage, regionId } = this.props;
     // const data1 = data.data;
     var req = [];
 
@@ -22,17 +23,58 @@ class TableBody extends Component {
       if (data[0].data !== -1) req = data[0].data;
     }
 
-    return (
-      <tbody>
-        {req.map(item => (
-          <tr>
-            {columns.map(column => (
-              <td>{this.renderCell(item, column)}</td>
-            ))}
+    if (req.length > 0) {
+      return (
+        <tbody className={"hello_" + regionId}>
+          {req.map((item, index) => (
+            <tr key={index} onDoubleClick={() => loadImage(item)}>
+              {columns.map((column, col_index) => (
+                <td key={col_index}>
+                  {this.renderCell(item, column, index + 1)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      );
+    } else if ((data[0] !== undefined && req.length === 0) || req === -1) {
+      return (
+        <tbody>
+          <tr
+            style={{
+              backgroundColor: "white",
+              marginTop: "10%"
+            }}
+          >
+            <td style={{ borderTop: "none" }}>
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              {/* <img
+                src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
+                style={{ marginBottom: "10%", marginLeft: "20%" }}
+                alt="loading..."
+              /> */}
+            </td>
           </tr>
-        ))}
-      </tbody>
-    );
+        </tbody>
+      );
+    } else if (data[0] === undefined) {
+      return (
+        <tbody>
+          <tr
+            style={{
+              backgroundColor: "white",
+              marginTop: "10%"
+            }}
+          >
+            <td style={{ borderTop: "none" }}>
+              <div className="spinner">
+                <Spin size="large" />
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      );
+    }
   }
 }
 

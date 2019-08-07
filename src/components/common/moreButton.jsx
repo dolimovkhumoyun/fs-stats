@@ -1,11 +1,11 @@
 import React from "react";
 
-const MoreBtn = ({ onClick }) => {
+const MoreButton = ({ onClick, classes, label }) => {
   return (
-    <button className="btn btn-default" onClick={() => onClick()}>
-      More...
+    <button className={classes} onClick={onClick}>
+      {label}
     </button>
   );
 };
 
-export default MoreBtn;
+export default MoreButton;

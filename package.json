@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@nivo/bar": "^0.59.2",
+    "animated-scroll-to": "^1.2.2",
     "antd": "^3.20.7",
     "axios": "^0.19.0",
     "bootstrap": "^4.1.1",
@@ -19,6 +20,7 @@
     "react-datetime": "^2.16.3",
     "react-datetimepicker-bootstrap": "^1.1.2",
     "react-dom": "^16.8.6",
+    "react-image-lightbox": "^5.1.0",
     "react-radio-buttons": "^1.2.2",
     "react-radio-group": "^3.0.3",
     "react-router-dom": "^5.0.1",
@@ -27,6 +29,7 @@
     "react-toastify": "^5.3.2",
     "react-web-tabs": "^1.0.1",
     "react-websocket": "^2.0.1",
+    "scroll-js": "^2.2.1",
     "socket.io-client": "^2.2.0",
     "tempusdominus-bootstrap-4": "^5.1.2",
     "websocket": "^1.0.29"

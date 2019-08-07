@@ -2,13 +2,13 @@ import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
 import Select from "react-select";
-// import { RadioGroup, RadioButton } from "react-radio-buttons";
-import { DatePicker, Input, Icon, Radio } from "antd";
+import { DatePicker, Input, Icon, Radio, Button } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 
 import moment from "moment";
 import _ from "lodash";
 import "antd/dist/antd.css";
+import MoreButton from "./moreButton";
 
 class SearchBar extends Form {
   state = {
@@ -19,81 +19,118 @@ class SearchBar extends Form {
     endDate: moment()
       .endOf("day")
       .format("YYYY-MM-DD HH:mm:ss"),
-    errors: {},
     optionsRegion: [],
-    optionsPosts: []
+    optionsPosts: [],
+    errors: {},
+    isDisabled: true
   };
 
   schema = {
     direction: Joi.required().label("Direction"),
     posts: Joi.required().label("Posts"),
     type: Joi.required().label("Type"),
-    carNumber: Joi.string()
-      .regex(/^[A-Za-z*_%\d]+$/g)
-      .required()
-      .label("Car Number")
+    carNumber: Joi.string().label("Car Number")
+    // .regex(/^[A-Za-z*_%\d]+$/g)
   };
 
   getOptions() {
-    this.props.socket.emit("regions", {});
-    const interval = 6 * 60 * 1000; // 6 minutes
+    const token = localStorage.getItem("token");
+    this.props.socket.emit("regions", { token });
+    const interval = 60 * 60 * 1000; // 6 minutes
     setInterval(() => {
-      this.props.socket.emit("regions", {});
+      this.props.socket.emit("regions", { token });
     }, interval);
   }
 
   componentDidMount() {
-    const { socket } = this.props;
     var that = this; // For using this inside other functions
-    socket.once("connect", function(data) {
-      that.getOptions();
-      this.on("regions", data => {
-        var options = data.data;
-        options.map(option => {
-          if (option.hasOwnProperty("isoffline")) {
-            option.isDisabled = option.isoffline;
-            delete option.isoffline;
-          }
-        });
 
-        that.setState({ optionsRegion: options });
+    // this.props.socket.on("connect", function(data) {
+    console.log("Hello");
+    that.getOptions();
+    that.props.socket.on("regions", data => {
+      var options = data.data;
+      options.map(option => {
+        if (option.hasOwnProperty("isoffline")) {
+          option.isDisabled = option.isoffline;
+          delete option.isoffline;
+        }
+        return true;
       });
-      this.on("err", function(data) {
-        console.log(data);
-      });
+
+      options = [{ value: "-1", label: "All" }, ...options];
+      that.setState({ optionsRegion: options });
     });
+    // });
   }
 
   doSubmit = async () => {
+    const token = localStorage.getItem("token");
     const { socket } = this.props;
     const { data, startDate, endDate } = this.state;
-    var { direction } = data;
-    this.props.callBack(direction);
+    var { carNumber, direction, posts, type } = data;
+    var spr = _.sortedUniq(_.map(posts, "id"));
 
+    this.props.callBack(
+      direction,
+      posts,
+      startDate,
+      endDate,
+      type,
+      carNumber,
+      spr
+    );
     direction = _.map(direction, "value");
+    var ips = _.map(posts, "value");
+
     let post = {};
     post = { ...this.state.data };
     post.startDate = startDate;
     post.endDate = endDate;
     post.direction = direction;
-    // console.log(post.direction);
+    post.posts = ips;
+    post.spr = spr; // selected Posts of Regions
+    post.token = token;
     socket.emit("search", post);
+    this.setState({ isDisabled: true });
   };
 
-  handleChange = selectedOptions => {
+  handleRegionsChange = selectedOptions => {
+    if (_.isEmpty(selectedOptions)) {
+      this.setState({ optionsPosts: selectedOptions, isDisabled: true });
+    } else if (!_.isEmpty(selectedOptions) && _.isEmpty(this.state.startDate))
+      this.setState({ isDisabled: true });
+    else if (_.isEmpty(this.state.startDate)) {
+      this.setState({ isDisabled: true });
+    } else this.setState({ isDisabled: false });
+
     const dirs = _.map(selectedOptions, "value");
     const { posts, carNumber, type } = this.state.data;
-    const direction = selectedOptions;
+    const { optionsRegion } = this.state;
+    var direction = selectedOptions;
+    const indexOfAll = _.findIndex(selectedOptions, { value: "-1" });
+    if (dirs[indexOfAll]) {
+      direction = optionsRegion;
+
+      direction = _.filter(direction, function(o) {
+        return o.value > 0 && !o.isDisabled;
+      });
+    }
 
     this.setState({
       data: { direction: direction, posts, carNumber, type }
     });
+
     if (direction === null) {
       this.setState({ optionsPosts: [] });
       return;
     }
+    const regions = _.map(direction, "value");
+    const token = localStorage.getItem("token");
+    let data = { regions, token };
+    // regions["token"] = localStorage.getItem("token");
+    this.props.socket.emit("posts", data);
 
-    this.props.socket.emit("posts", dirs);
     const that = this;
     this.props.socket.once("posts", function(data) {
       const optionsPosts = data.data;
@@ -102,6 +139,7 @@ class SearchBar extends Form {
           option.isDisabled = option.isoffline;
           delete option.isoffline;
         }
+        return true;
       });
 
       that.setState({ optionsPosts });
@@ -120,8 +158,17 @@ class SearchBar extends Form {
   handleRadioButtonChange = e => {
     const { direction, posts, carNumber } = this.state.data;
     const { value } = e.target;
+
     this.setState({ data: { type: value, direction, posts, carNumber } });
   };
+
+  handleRangeChange = range => {
+    if (_.isEmpty(range))
+      this.setState({ startDate: null, endDate: null, isDisabled: true });
+    else if (!_.isEmpty(this.state.data.direction))
+      this.setState({ isDisabled: false });
+  };
+
   // Event fired when Date Range has been selected
   onOk = range => {
     const startDate = moment(range[0]).format("YYYY-MM-DD HH:mm:ss");
@@ -147,11 +194,21 @@ class SearchBar extends Form {
     if (errorMessage) errors[input.name] = errorMessage;
     else delete errors[input.name];
 
-    this.setState({ data, errors });
+    let isDisabled = true;
+    if (this.state.data.direction !== null && this.state.startDate)
+      isDisabled = false;
+
+    this.setState({ data, errors, isDisabled });
   };
 
   render() {
-    const { optionsRegion, optionsPosts, startDate, endDate } = this.state;
+    const {
+      optionsRegion,
+      optionsPosts,
+      startDate,
+      endDate,
+      isDisabled
+    } = this.state;
     const { carNumber } = this.state.data;
 
     const { RangePicker } = DatePicker;
@@ -162,13 +219,13 @@ class SearchBar extends Form {
         <form onSubmit={this.handleSubmit} className="mt-4">
           <div className="form-group col-md-12">
             <Radio.Group
-              defaultValue="all"
+              defaultValue="-1"
               size="large"
               onChange={this.handleRadioButtonChange}
             >
-              <Radio.Button value="all">All</Radio.Button>
-              <Radio.Button value="wanted">Wanted</Radio.Button>
-              <Radio.Button value="notwanted">Not Wanted</Radio.Button>
+              <Radio.Button value="-1">All</Radio.Button>
+              <Radio.Button value="1">Wanted</Radio.Button>
+              <Radio.Button value="0">Not Wanted</Radio.Button>
             </Radio.Group>
           </div>
           <div className="form-group ">
@@ -185,8 +242,14 @@ class SearchBar extends Form {
               className="col-md-12"
               defaultValue={[moment(startDate), moment(endDate)]}
               name={["startDate", "endDate"]}
+              onChange={this.handleRangeChange}
               onOk={this.onOk}
             />
+            {this.error && (
+              <div className="alert alert-danger col-md-12 mt-2">
+                {this.error}
+              </div>
+            )}
           </div>
           <div className="form-group col-md-12">
             <label htmlFor="">
@@ -208,13 +271,14 @@ class SearchBar extends Form {
             </label>
             <Select
               options={optionsRegion}
-              onChange={this.handleChange}
+              onChange={this.handleRegionsChange}
               isMulti
               closeMenuOnSelect={false}
               inputProps={{ id: "fieldId" }}
-              // className=""
               clearable={false}
               required={true}
+              components={{ MoreButton }}
+              value={this.state.data.direction}
             />
           </div>
           <div className="form-group col-md-12">
@@ -229,7 +293,12 @@ class SearchBar extends Form {
               inputProps={{ id: "fieldId" }}
             />
           </div>
-          {this.renderButton("submit")}
+          <div className="col-md-4">
+            <Button type="primary" htmlType="submit" disabled={isDisabled}>
+              Search
+            </Button>
+          </div>
+          {/* {this.renderButton("submit")} */}
         </form>
 
         <div>

@@ -19,7 +19,7 @@ const NavBar = () => {
       <div className="collapse navbar-collapse" id="navbarNav">
         <ul className="navbar-nav ml-4">
           <li className="nav-item ml-4">
-            <NavLink className="nav-link " to="/dashboard">
+            <NavLink className="nav-link " to="/dashboard" disabled>
               Statistics
             </NavLink>
           </li>

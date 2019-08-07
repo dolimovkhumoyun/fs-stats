@@ -4,18 +4,34 @@ import _ from "lodash";
 
 class RegionsTable extends Component {
   columns = [
-    { path: "id", label: "#" },
+    {
+      path: "index",
+      label: "#",
+      content: index => {
+        // console.log(index);
+        return index;
+      }
+    },
     { path: "camera", label: "Camera" },
     { path: "the_date", label: "Date" },
     { path: "car_number", label: "Car Number" }
   ];
 
   render() {
-    const { request, regionId } = this.props;
+    const { request, regionId, count, loadImage } = this.props;
     var data = [];
     data = _.filter(request, { id: regionId });
 
-    return <Table columns={this.columns} data={data} />;
+    if (count !== undefined) var total = count.count;
+    return (
+      <Table
+        columns={this.columns}
+        data={data}
+        total={total}
+        loadImage={loadImage}
+        regionId={regionId}
+      />
+    );
   }
 }
 
