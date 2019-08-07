@@ -5,16 +5,18 @@ import { Form as AntdForm, Icon, Input, Button } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 // import _ from "lodash";
 
+import io from "socket.io-client";
+
 import "antd/dist/antd.css";
 import "../css/login.css";
 
 class Login extends Form {
+  socket = io("101.4.0.254:8878/api"); //101.4.0.254:8878/api   192.168.1.31:8878/api
+
   state = {
     data: { username: "", password: "" },
     errors: {}
   };
-
-  socket = this.props.socket;
 
   schema = {
     username: Joi.string()
@@ -29,6 +31,7 @@ class Login extends Form {
     const { username, password } = this.state.data;
     let that = this;
     const loginData = { username, password };
+
     this.socket.emit("login", loginData);
 
     this.socket.on("login", function(data) {

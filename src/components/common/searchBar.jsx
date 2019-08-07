@@ -37,16 +37,18 @@ class SearchBar extends Form {
     const token = localStorage.getItem("token");
     this.props.socket.emit("regions", { token });
     const interval = 60 * 60 * 1000; // 6 minutes
-    const intervarlRegions = setInterval(() => {
+    setInterval(() => {
       this.props.socket.emit("regions", { token });
     }, interval);
   }
 
   componentDidMount() {
     var that = this; // For using this inside other functions
-    // socket.once("connect", function(data) {
-    this.getOptions();
-    this.props.socket.on("regions", data => {
+
+    // this.props.socket.on("connect", function(data) {
+    console.log("Hello");
+    that.getOptions();
+    that.props.socket.on("regions", data => {
       var options = data.data;
       options.map(option => {
         if (option.hasOwnProperty("isoffline")) {
@@ -59,7 +61,6 @@ class SearchBar extends Form {
       options = [{ value: "-1", label: "All" }, ...options];
       that.setState({ optionsRegion: options });
     });
-
     // });
   }
 
@@ -140,9 +141,7 @@ class SearchBar extends Form {
         }
         return true;
       });
-      // // console.log(regions.length);
-      // if (regions.length == 0) {
-      //   that.setState({ optionsPosts: "" });
+
       that.setState({ optionsPosts });
     });
   };
@@ -159,6 +158,7 @@ class SearchBar extends Form {
   handleRadioButtonChange = e => {
     const { direction, posts, carNumber } = this.state.data;
     const { value } = e.target;
+
     this.setState({ data: { type: value, direction, posts, carNumber } });
   };
 
@@ -194,7 +194,11 @@ class SearchBar extends Form {
     if (errorMessage) errors[input.name] = errorMessage;
     else delete errors[input.name];
 
-    this.setState({ data, errors });
+    let isDisabled = true;
+    if (this.state.data.direction !== null && this.state.startDate)
+      isDisabled = false;
+
+    this.setState({ data, errors, isDisabled });
   };
 
   render() {

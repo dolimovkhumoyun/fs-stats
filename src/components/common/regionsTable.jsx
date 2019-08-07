@@ -29,6 +29,7 @@ class RegionsTable extends Component {
         data={data}
         total={total}
         loadImage={loadImage}
+        regionId={regionId}
       />
     );
   }

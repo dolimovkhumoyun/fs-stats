@@ -3,7 +3,7 @@ import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
 import RegionsTable from "./common/regionsTable";
 import _ from "lodash";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 
 import "../css/search.css";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -13,7 +13,7 @@ import animateScrollTo from "animated-scroll-to";
 import { Tabs, Button } from "antd";
 import "antd/dist/antd.css";
 
-// import io from "socket.io-client";
+import io from "socket.io-client";
 
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
@@ -21,26 +21,7 @@ import "react-image-lightbox/style.css";
 //  Search Bar
 class Search extends Component {
   // socket;
-
-  constructor(props) {
-    super(props);
-    // socket = io("192.168.1.31:8878/api");
-    this.socket = this.props.socket;
-    this.token = localStorage.getItem("token");
-
-    if (!this.token) {
-      this.props.history.push("/login");
-      toast.error("Please, login first.");
-    }
-
-    this.props.socket.on("err", function(data) {
-      console.log(data)
-      if (data.status === 401) {
-        localStorage.removeItem("token");
-        props.history.push("/");
-      }
-    });
-  }
+  socket = io("101.4.0.254:8878/api"); //101.4.0.254:8878/api
 
   state = {
     data: {
@@ -65,10 +46,11 @@ class Search extends Component {
     // const token = localStorage.getItem("token");
     const that = this;
     var count = [];
-    this.props.socket.once("connect", function() {
+    this.socket.once("connect", function() {
       that.request = [];
 
-      that.props.socket.on("search", function(data) {
+      that.socket.on("search", function(data) {
+        console.log(data);
         const index = _.findIndex(that.request, { id: data.id });
         if (index !== -1) {
           if (!_.isEmpty(data.data)) {
@@ -85,11 +67,16 @@ class Search extends Component {
           loading: false,
           loadingSearchButton: false
         });
-        let tableBody = document.getElementsByClassName("hello");
+        let tableBody = document.getElementsByClassName(
+          "hello_" + that.state.selectedOption
+        );
+
         if (tableBody[0] !== undefined) {
           const options = {
             speed: 6500,
-            element: document.querySelector(".hello"),
+            element: document.querySelector(
+              ".hello_" + that.state.selectedOption
+            ),
             offset: tableBody[0].scrollHeight - tableBody[0].scrollTop
           };
 
@@ -107,7 +94,20 @@ class Search extends Component {
         that.setState({ count });
       });
     });
+
+    this.socket.on("err", function(data) {
+      console.log(data);
+      if (data.status === 401) {
+        localStorage.removeItem("token");
+        that.props.history.push("/");
+      }
+    });
   }
+
+  handleTabClick = option => {
+    console.log(option);
+    this.setState({ selectedOption: option });
+  };
 
   handleOptionSelect = option => {
     this.setState({ selectedOption: option });
@@ -115,7 +115,8 @@ class Search extends Component {
 
   callBack = (direction, posts, startDate, endDate, type, carNumber, spr) => {
     this.setState({
-      data: { direction, posts, startDate, endDate, type, carNumber, spr }
+      data: { direction, posts, startDate, endDate, type, carNumber, spr },
+      selectedOption: direction[0].value
     });
     this.request = [];
   };
@@ -225,6 +226,7 @@ class Search extends Component {
 
   render() {
     const { data, request, count, visible } = this.state;
+    const { socket } = this.props;
     const { direction } = data;
     const { TabPane } = Tabs;
 
@@ -244,12 +246,18 @@ class Search extends Component {
             />
           </div>
           <div className="col-md-9 mt-4">
-            <Tabs defaultActiveKey="1" tabPosition="left" size="large">
+            <Tabs
+              defaultActiveKey="1"
+              tabPosition="left"
+              size="large"
+              onChange={this.handleTabClick}
+            >
               {direction.map(option => (
                 <TabPane
                   tab={option.label}
                   key={option.value}
                   disabled={this.handlingConnectionless(option.value)}
+                  onClick={() => this.handleTabClick(option)}
                 >
                   <div className="mt-4 ml-4  ">
                     <RegionsTable

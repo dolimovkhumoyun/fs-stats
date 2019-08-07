@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import _ from "lodash";
-import { Empty, Spin, Alert } from "antd";
-import { regExpLiteral } from "@babel/types";
+import { Empty, Spin } from "antd";
 
 class TableBody extends Component {
   renderCell = (item, column, index) => {
@@ -15,7 +14,7 @@ class TableBody extends Component {
   };
 
   render() {
-    const { data, columns, loadImage } = this.props;
+    const { data, columns, loadImage, regionId } = this.props;
     // const data1 = data.data;
     var req = [];
 
@@ -26,7 +25,7 @@ class TableBody extends Component {
 
     if (req.length > 0) {
       return (
-        <tbody className="hello">
+        <tbody className={"hello_" + regionId}>
           {req.map((item, index) => (
             <tr key={index} onDoubleClick={() => loadImage(item)}>
               {columns.map((column, col_index) => (
