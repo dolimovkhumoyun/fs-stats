@@ -4,14 +4,15 @@ import TableBody from "./tableBody";
 
 import _ from "lodash";
 
-const Table = ({ columns, data, total, loadImage, regionId }) => {
+const Table = ({ columns, data, total, loadImage, regionId, isOn }) => {
   if (data !== undefined && !_.isEmpty(data))
     var totalData = data[0].data.length;
   return (
     <React.Fragment>
-      {total !== -1 && (
+      {total !== -1 && total !== undefined && (
         <p>
-          Showing <strong>{totalData}</strong> out of <strong>{total}</strong>
+          Намойиш этилаябди <strong>{totalData} </strong>та ёзув{" "}
+          <strong>{total}</strong> тадан.
         </p>
       )}
       <div className="table-responsive">
@@ -22,6 +23,7 @@ const Table = ({ columns, data, total, loadImage, regionId }) => {
             columns={columns}
             loadImage={loadImage}
             regionId={regionId}
+            isOn={isOn}
           />
         </table>
       </div>

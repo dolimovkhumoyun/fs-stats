@@ -1,6 +1,12 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 
+function handleLogout(e) {
+  e.preventDefault();
+  localStorage.removeItem("token");
+  window.location = "./";
+}
+
 const NavBar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow">
@@ -20,15 +26,23 @@ const NavBar = () => {
         <ul className="navbar-nav ml-4">
           <li className="nav-item ml-4">
             <NavLink className="nav-link " to="/dashboard" disabled>
-              Statistics
+              Статистика
             </NavLink>
           </li>
           <li className="nav-item ml-4">
             <NavLink className="nav-link" to="/search">
-              Search
+              Қидирув
             </NavLink>
           </li>
         </ul>
+
+        <span
+          className="navbar-text ml-auto text-white logout "
+          style={{ cursor: "pointer" }}
+          onClick={handleLogout}
+        >
+          Чиқиш
+        </span>
       </div>
     </nav>
   );

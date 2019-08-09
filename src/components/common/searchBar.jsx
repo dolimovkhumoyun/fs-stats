@@ -2,17 +2,17 @@ import React from "react";
 import Joi from "joi-browser";
 import Form from "./form";
 import Select from "react-select";
-import { DatePicker, Input, Icon, Radio, Button } from "antd";
+import { DatePicker, Input, Icon, Radio, Button, Tooltip } from "antd";
 import { toast, ToastContainer } from "react-toastify";
 
 import moment from "moment";
 import _ from "lodash";
 import "antd/dist/antd.css";
 import MoreButton from "./moreButton";
-
+import "moment/locale/uz";
 class SearchBar extends Form {
   state = {
-    data: { direction: [], posts: [], type: "all", carNumber: "60A770AA" },
+    data: { direction: [], posts: [], type: "all", carNumber: "" },
     startDate: moment()
       .startOf("day")
       .format("YYYY-MM-DD HH:mm:ss"),
@@ -22,14 +22,15 @@ class SearchBar extends Form {
     optionsRegion: [],
     optionsPosts: [],
     errors: {},
-    isDisabled: true
+    isDisabled: true,
+    TooltipVisibility: false
   };
 
   schema = {
     direction: Joi.required().label("Direction"),
     posts: Joi.required().label("Posts"),
     type: Joi.required().label("Type"),
-    carNumber: Joi.string().label("Car Number")
+    carNumber: Joi.label("Car Number")
     // .regex(/^[A-Za-z*_%\d]+$/g)
   };
 
@@ -46,7 +47,6 @@ class SearchBar extends Form {
     var that = this; // For using this inside other functions
 
     // this.props.socket.on("connect", function(data) {
-    console.log("Hello");
     that.getOptions();
     that.props.socket.on("regions", data => {
       var options = data.data;
@@ -58,7 +58,7 @@ class SearchBar extends Form {
         return true;
       });
 
-      options = [{ value: "-1", label: "All" }, ...options];
+      options = [{ value: "-1", label: "Жами" }, ...options];
       that.setState({ optionsRegion: options });
     });
     // });
@@ -70,6 +70,8 @@ class SearchBar extends Form {
     const { data, startDate, endDate } = this.state;
     var { carNumber, direction, posts, type } = data;
     var spr = _.sortedUniq(_.map(posts, "id"));
+    let isOn = true;
+    let count = "";
 
     this.props.callBack(
       direction,
@@ -78,7 +80,9 @@ class SearchBar extends Form {
       endDate,
       type,
       carNumber,
-      spr
+      spr,
+      isOn,
+      count
     );
     direction = _.map(direction, "value");
     var ips = _.map(posts, "value");
@@ -92,6 +96,7 @@ class SearchBar extends Form {
     post.spr = spr; // selected Posts of Regions
     post.token = token;
     socket.emit("search", post);
+
     this.setState({ isDisabled: true });
   };
 
@@ -159,7 +164,13 @@ class SearchBar extends Form {
     const { direction, posts, carNumber } = this.state.data;
     const { value } = e.target;
 
-    this.setState({ data: { type: value, direction, posts, carNumber } });
+    let isDisabled = true;
+    console.log(direction);
+    if (direction.length !== 0 && this.state.startDate) isDisabled = false;
+    this.setState({
+      data: { type: value, direction, posts, carNumber },
+      isDisabled
+    });
   };
 
   handleRangeChange = range => {
@@ -177,7 +188,7 @@ class SearchBar extends Form {
     diff = moment.duration(diff).asDays();
     if (diff >= 30) {
       toast.error(
-        "You are seraching data for 1 Month.    It may take some time longer!!"
+        "Сиз 1 ойдан кўп болган малумотни қидирмоқдасиз.  Бу кўп вақт олиши мумкин!"
       );
     }
 
@@ -189,16 +200,20 @@ class SearchBar extends Form {
     const data = { ...this.state.data };
     data[input.name] = input.value.toUpperCase();
 
+    if (data[input.name] && !/^[A-Za-z*_%0-9\s]+$/g.test(data[input.name])) {
+      this.setState({ TooltipVisibility: true });
+      return true;
+    }
     const errors = { ...this.state.errors };
     const errorMessage = this.validateProperty(input);
     if (errorMessage) errors[input.name] = errorMessage;
     else delete errors[input.name];
 
     let isDisabled = true;
-    if (this.state.data.direction !== null && this.state.startDate)
+    if (this.state.data.direction.length !== 0 && this.state.startDate)
       isDisabled = false;
 
-    this.setState({ data, errors, isDisabled });
+    this.setState({ data, errors, isDisabled, TooltipVisibility: false });
   };
 
   render() {
@@ -223,20 +238,20 @@ class SearchBar extends Form {
               size="large"
               onChange={this.handleRadioButtonChange}
             >
-              <Radio.Button value="-1">All</Radio.Button>
-              <Radio.Button value="1">Wanted</Radio.Button>
-              <Radio.Button value="0">Not Wanted</Radio.Button>
+              <Radio.Button value="-1">Жами</Radio.Button>
+              <Radio.Button value="1">Қидирувда</Radio.Button>
+              <Radio.Button value="0">Қидирувда эмас</Radio.Button>
             </Radio.Group>
           </div>
           <div className="form-group ">
             <label htmlFor="" className="col-md-12">
-              <strong> Date and Time: </strong>
+              <strong> Сана ва вақт: </strong>
             </label>
             <br />
             <RangePicker
               showTime={{ format: "HH:mm:ss" }}
               format="YYYY-MM-DD HH:mm:ss"
-              placeholder={["Start Time", "End Time"]}
+              placeholder={["Дан", "Гача"]}
               size="large"
               style={{ width: 500 }}
               className="col-md-12"
@@ -253,11 +268,19 @@ class SearchBar extends Form {
           </div>
           <div className="form-group col-md-12">
             <label htmlFor="">
-              <strong> Car Number: </strong>
+              <strong> Автомобил ДРБ: </strong>
             </label>
             <Input
-              addonAfter={<Icon type="setting" onClick={this.IconClick} />}
-              placeholder="60A770AA"
+              addonAfter={
+                <Tooltip
+                  placement="topLeft"
+                  title="Автомобил ДРБси ёки  *, % ва _  қабул қилиши мумкин"
+                  visible={this.state.TooltipVisibility}
+                >
+                  <Icon type="info-circle" theme="twoTone" />
+                </Tooltip>
+              }
+              placeholder="Автомобил ДРБ"
               size="large"
               allowClear={true}
               name="carNumber"
@@ -267,9 +290,10 @@ class SearchBar extends Form {
           </div>
           <div className="form-group col-md-12">
             <label htmlFor={"regions"}>
-              <strong>Regions: </strong>
+              <strong>Вилоятлар: </strong>
             </label>
             <Select
+              placeholder="Танламоқ"
               options={optionsRegion}
               onChange={this.handleRegionsChange}
               isMulti
@@ -283,9 +307,10 @@ class SearchBar extends Form {
           </div>
           <div className="form-group col-md-12">
             <label htmlFor={"regions"} className="mt-2">
-              <strong>Posts: </strong>
+              <strong>ЙПХ масканлари: </strong>
             </label>
             <Select
+              placeholder="Танламоқ"
               options={optionsPosts}
               onChange={this.handlePostsSelect}
               isMulti
@@ -294,8 +319,13 @@ class SearchBar extends Form {
             />
           </div>
           <div className="col-md-4">
-            <Button type="primary" htmlType="submit" disabled={isDisabled}>
-              Search
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={isDisabled}
+              loading={this.props.isOn}
+            >
+              Излаш
             </Button>
           </div>
           {/* {this.renderButton("submit")} */}

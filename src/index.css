@@ -72,9 +72,18 @@ html {
 }
 
 .spinner {
+  position: absolute;
+  right: 30px;
+  left: 30px;
+  top: 50px;
   text-align: center;
   border-radius: 4px;
   margin-bottom: 20px;
   padding: 30px 50px;
   margin: 20px 0;
+  z-index: 9999;
 }
+/* 
+.ant-tabs-tab {
+  text-align: left !important;
+} */

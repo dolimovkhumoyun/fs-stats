@@ -12,13 +12,13 @@ class RegionsTable extends Component {
         return index;
       }
     },
-    { path: "camera", label: "Camera" },
-    { path: "the_date", label: "Date" },
-    { path: "car_number", label: "Car Number" }
+    { path: "camera", label: "Камера" },
+    { path: "the_date", label: "Сана" },
+    { path: "car_number", label: "Автоулов рақaми" }
   ];
 
   render() {
-    const { request, regionId, count, loadImage } = this.props;
+    const { request, regionId, count, loadImage, isOn } = this.props;
     var data = [];
     data = _.filter(request, { id: regionId });
 
@@ -30,6 +30,7 @@ class RegionsTable extends Component {
         total={total}
         loadImage={loadImage}
         regionId={regionId}
+        isOn={isOn}
       />
     );
   }

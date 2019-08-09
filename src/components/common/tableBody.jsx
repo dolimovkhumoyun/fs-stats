@@ -14,7 +14,7 @@ class TableBody extends Component {
   };
 
   render() {
-    const { data, columns, loadImage, regionId } = this.props;
+    const { data, columns, loadImage, regionId, isOn } = this.props;
     // const data1 = data.data;
     var req = [];
 
@@ -22,10 +22,14 @@ class TableBody extends Component {
     } else {
       if (data[0].data !== -1) req = data[0].data;
     }
-
     if (req.length > 0) {
       return (
         <tbody className={"hello_" + regionId}>
+          {isOn && (
+            <div className="spinner">
+              <Spin size="large" />
+            </div>
+          )}
           {req.map((item, index) => (
             <tr key={index} onDoubleClick={() => loadImage(item)}>
               {columns.map((column, col_index) => (
@@ -47,12 +51,10 @@ class TableBody extends Component {
             }}
           >
             <td style={{ borderTop: "none" }}>
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-              {/* <img
-                src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif"
-                style={{ marginBottom: "10%", marginLeft: "20%" }}
-                alt="loading..."
-              /> */}
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="Маълумот топилмади"
+              />
             </td>
           </tr>
         </tbody>

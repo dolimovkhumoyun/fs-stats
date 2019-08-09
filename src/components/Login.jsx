@@ -27,6 +27,10 @@ class Login extends Form {
       .label("Password")
   };
 
+  componentDidMount() {
+    if (localStorage.getItem("token")) this.props.history.push("/search");
+  }
+
   doSubmit = () => {
     const { username, password } = this.state.data;
     let that = this;
@@ -42,7 +46,7 @@ class Login extends Form {
           token: data.token
         });
       } else {
-        toast.error("Your credentials are wrong");
+        toast.error("Бундай фойдаланувчи мавжуд эмас.");
       }
     });
   };
@@ -53,7 +57,7 @@ class Login extends Form {
       <div className="container wrapper box-shadow ">
         <ToastContainer position="top-center" />
         <form onSubmit={this.handleLogin} className="form-signin">
-          <h1>Login Form</h1>
+          <h1>Шахсий кабинетга кириш</h1>
           <hr />
           <AntdForm.Item>
             <Input
@@ -92,7 +96,7 @@ class Login extends Form {
               htmlType="submit"
               className="login-form-button"
             >
-              Log in
+              Кириш
             </Button>
           </AntdForm.Item>
         </form>

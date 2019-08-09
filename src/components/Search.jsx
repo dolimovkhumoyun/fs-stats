@@ -3,20 +3,22 @@ import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
 import RegionsTable from "./common/regionsTable";
 import _ from "lodash";
-import { ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 import "../css/search.css";
 import "react-toastify/dist/ReactToastify.min.css";
 
 import animateScrollTo from "animated-scroll-to";
 
-import { Tabs, Button } from "antd";
+import { Tabs, Button, Badge } from "antd";
 import "antd/dist/antd.css";
 
 import io from "socket.io-client";
 
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
+
+import numeral from "numeral";
 
 //  Search Bar
 class Search extends Component {
@@ -39,10 +41,16 @@ class Search extends Component {
     selectedOption: "",
     loading: false,
     iconLoading: false,
-    visible: false
+    visible: false,
+    isOn: false
   };
 
   componentDidMount() {
+    if (!localStorage.getItem("token")) {
+      this.props.history.push("/");
+      return false;
+    }
+
     // const token = localStorage.getItem("token");
     const that = this;
     var count = [];
@@ -50,7 +58,8 @@ class Search extends Component {
       that.request = [];
 
       that.socket.on("search", function(data) {
-        console.log(data);
+        that.setState({ isOn: false });
+        // console.log(data);
         const index = _.findIndex(that.request, { id: data.id });
         if (index !== -1) {
           if (!_.isEmpty(data.data)) {
@@ -96,10 +105,11 @@ class Search extends Component {
     });
 
     this.socket.on("err", function(data) {
-      console.log(data);
+      // console.log(data);
       if (data.status === 401) {
         localStorage.removeItem("token");
         that.props.history.push("/");
+        toast.info("Сизнинг сессиянгиз тугади.  Қайтадан киринг!");
       }
     });
   }
@@ -113,19 +123,27 @@ class Search extends Component {
     this.setState({ selectedOption: option });
   };
 
-  callBack = (direction, posts, startDate, endDate, type, carNumber, spr) => {
+  callBack = (
+    direction,
+    posts,
+    startDate,
+    endDate,
+    type,
+    carNumber,
+    spr,
+    isOn,
+    count
+  ) => {
     this.setState({
       data: { direction, posts, startDate, endDate, type, carNumber, spr },
-      selectedOption: direction[0].value
+      selectedOption: direction[0].value,
+      isOn,
+      count
     });
     this.request = [];
   };
 
   enterLoading = region => {
-    // tableBody[0].scrollTop = tableBody[0].scrollHeight + 1000;
-    // console.log("Height  " + tableBody[0].scrollHeight);
-    // console.log("Scroll  " + tableBody[0].scrollTop);
-
     const { carNumber, type, startDate, endDate, spr } = this.state.data;
     const regionData = _.filter(this.state.request, function(o) {
       return o.id === region;
@@ -158,8 +176,13 @@ class Search extends Component {
 
   renderTabName = option => {
     const temp = _.find(this.state.count, { id: option.value });
-    if (temp !== undefined) {
-      return <div>{option.label}</div>;
+
+    if (temp !== undefined && temp.count !== -1) {
+      var string = numeral(temp.count).format("0,0");
+
+      return "  |  " + string;
+    } else {
+      return "";
     }
   };
 
@@ -183,10 +206,8 @@ class Search extends Component {
   };
 
   loadImage = item => {
-    // evnt_id   ip  the_date
     const oldImg = this.state.img;
-    // console.log(item.event_id, img.event_id);
-    // if (item.event_id === img.event_id) return true;
+
     var that = this;
     let data = {
       event_id: item.event_id,
@@ -199,6 +220,11 @@ class Search extends Component {
       if (oldImg !== undefined && oldImg.event_id === data.event_id) {
         that.setState({ visible: true });
       } else {
+        if (data.data[0].car_photo === null) {
+          console.log("photo null");
+          toast.error("Расм топилмади");
+          return false;
+        }
         const img = "data:image/jpeg;base64," + data.data[0].car_photo;
         data.data[0].car_photo = img;
         that.setState({ img: data, visible: true });
@@ -225,71 +251,78 @@ class Search extends Component {
   };
 
   render() {
-    const { data, request, count, visible } = this.state;
-    const { socket } = this.props;
+    const { data, request, count, visible, isOn } = this.state;
+    // const { socket } = this.props;
     const { direction } = data;
     const { TabPane } = Tabs;
 
     return (
       <React.Fragment>
-        <ToastContainer position="top-center" />
-        <NavBar />
-        <div className="row">
-          <div className="col-md-3 mw-30 rounded-sm searchBar shadow">
-            <h1 className="mt-4">Filter</h1>
-            <hr />
-            <SearchBar
-              callBack={this.callBack}
-              socket={this.socket}
-              check={this.CheckSearchBar}
-              token={this.token}
-            />
-          </div>
-          <div className="col-md-9 mt-4">
-            <Tabs
-              defaultActiveKey="1"
-              tabPosition="left"
-              size="large"
-              onChange={this.handleTabClick}
-            >
-              {direction.map(option => (
-                <TabPane
-                  tab={option.label}
-                  key={option.value}
-                  disabled={this.handlingConnectionless(option.value)}
-                  onClick={() => this.handleTabClick(option)}
-                >
-                  <div className="mt-4 ml-4  ">
-                    <RegionsTable
-                      request={request}
-                      regionId={option.value}
-                      count={count[_.findIndex(count, { id: option.value })]}
-                      loadImage={this.loadImage}
-                    />
-                    <div className="">
-                      <Button
-                        type="primary"
-                        loading={this.state.loading}
-                        onClick={() => this.enterLoading(option.value)}
-                        disabled={this.handlingMoreDisabled(option)}
-                        block
-                      >
-                        Load More
-                      </Button>
+        <div className="">
+          <NavBar />
+          <div className="row">
+            <div className="col-md-3 mw-30 rounded-sm searchBar shadow">
+              <h1 className="mt-4">Филтрлаш</h1>
+              <hr />
+              <SearchBar
+                callBack={this.callBack}
+                socket={this.socket}
+                check={this.CheckSearchBar}
+                token={this.token}
+                isOn={isOn}
+              />
+            </div>
+            <div className="col-md mt-4">
+              <Tabs
+                defaultActiveKey="1"
+                tabPosition="left"
+                size="large"
+                onChange={this.handleTabClick}
+              >
+                {direction.map(option => (
+                  // <Badge count={99}></Badge>
+                  <TabPane
+                    tab={option.label + this.renderTabName(option)}
+                    key={option.value}
+                    disabled={this.handlingConnectionless(option.value)}
+                    onClick={() => this.handleTabClick(option)}
+                    className="tabs"
+                  >
+                    <div className="mt-4   ">
+                      <div className="">
+                        <RegionsTable
+                          request={request}
+                          regionId={option.value}
+                          count={
+                            count[_.findIndex(count, { id: option.value })]
+                          }
+                          loadImage={this.loadImage}
+                          isOn={this.state.isOn}
+                        />
+                        <Button
+                          type="primary"
+                          loading={this.state.loading}
+                          onClick={() => this.enterLoading(option.value)}
+                          disabled={this.handlingMoreDisabled(option)}
+                          block
+                        >
+                          Кўпроқ юкланг
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </TabPane>
-              ))}
-            </Tabs>
+                  </TabPane>
+                ))}
+              </Tabs>
+            </div>
           </div>
-        </div>
 
-        {visible && (
-          <Lightbox
-            mainSrc={this.state.img.data[0].car_photo}
-            onCloseRequest={() => this.setState({ visible: false })}
-          />
-        )}
+          {visible && (
+            <Lightbox
+              mainSrc={this.state.img.data[0].car_photo}
+              onCloseRequest={() => this.setState({ visible: false })}
+            />
+          )}
+        </div>
       </React.Fragment>
     );
   }

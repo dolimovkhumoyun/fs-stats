@@ -5,20 +5,11 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashborad";
 import Search from "./components/Search";
 
-import io from "socket.io-client";
+// import io from "socket.io-client";
 // import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 
 class App extends Component {
-  // socket = io("192.168.1.31:8878/api"); //101.4.0.254:8878/api
-
-  // constructor() {
-  //   super();
-  //   this.socket.on("connection", function(data) {
-  //     console.log("hello");
-  //   });
-  // }
-
   render() {
     return (
       <React.Fragment>
