@@ -12,6 +12,10 @@ code {
     monospace;
 }
 
+.container-fluid {
+  padding: 0px !important;
+}
+
 /*!
  * https://github.com/YouCanBookMe/react-datetime
  */

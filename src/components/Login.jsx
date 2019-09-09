@@ -15,7 +15,8 @@ class Login extends Form {
 
   state = {
     data: { username: "", password: "" },
-    errors: {}
+    errors: {},
+    isLogging: false
   };
 
   schema = {
@@ -32,13 +33,15 @@ class Login extends Form {
   }
 
   doSubmit = () => {
-    const { username, password } = this.state.data;
     let that = this;
+    const { username, password } = this.state.data;
     const loginData = { username, password };
 
+    // this.setState({ isLogging: true });
     this.socket.emit("login", loginData);
 
     this.socket.on("login", function(data) {
+      console.log(data);
       if (data.success) {
         localStorage.setItem("token", data.token);
         that.props.history.push({
@@ -48,16 +51,20 @@ class Login extends Form {
       } else {
         toast.error("Бундай фойдаланувчи мавжуд эмас.");
       }
+      that.setState({ isLogging: false });
     });
   };
 
   render() {
-    const { errors } = this.state;
+    const { errors, isLogging } = this.state;
     return (
-      <div className="container wrapper box-shadow ">
+      <div className="container-fluid wrapper box-shadow ">
         <ToastContainer position="top-center" />
         <form onSubmit={this.handleLogin} className="form-signin">
-          <h1>Шахсий кабинетга кириш</h1>
+          <h1>
+            Тизимга кириш <Icon type="login" theme="outlined" />
+          </h1>
+
           <hr />
           <AntdForm.Item>
             <Input
@@ -95,6 +102,7 @@ class Login extends Form {
               type="primary"
               htmlType="submit"
               className="login-form-button"
+              loading={isLogging}
             >
               Кириш
             </Button>

@@ -10,6 +10,7 @@ import _ from "lodash";
 import "antd/dist/antd.css";
 import MoreButton from "./moreButton";
 import "moment/locale/uz";
+
 class SearchBar extends Form {
   state = {
     data: { direction: [], posts: [], type: "all", carNumber: "" },
@@ -60,6 +61,11 @@ class SearchBar extends Form {
 
       options = [{ value: "-1", label: "Жами" }, ...options];
       that.setState({ optionsRegion: options });
+
+      //
+      let regions = _.map(data.data, "value");
+      let token = localStorage.getItem("token");
+      that.props.socket.emit("posts", { regions, token });
     });
     // });
   }
@@ -152,10 +158,18 @@ class SearchBar extends Form {
   };
 
   handlePostsSelect = selectedOptions => {
+    const { startDate } = this.state;
     const { direction, carNumber, type } = this.state.data;
     const posts = selectedOptions;
+    let isDisabled = true;
+    if (!_.isEmpty(direction) && type && startDate) {
+      console.log("Hello");
+      isDisabled = false;
+    }
+
     this.setState({
-      data: { direction, posts, carNumber, type }
+      data: { direction, posts, carNumber, type },
+      isDisabled
     });
   };
 
@@ -237,6 +251,7 @@ class SearchBar extends Form {
               defaultValue="-1"
               size="large"
               onChange={this.handleRadioButtonChange}
+              name="radio"
             >
               <Radio.Button value="-1">Жами</Radio.Button>
               <Radio.Button value="1">Қидирувда</Radio.Button>

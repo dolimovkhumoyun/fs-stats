@@ -8,35 +8,25 @@
     "@nivo/bar": "^0.59.2",
     "animated-scroll-to": "^1.2.2",
     "antd": "^3.20.7",
-    "axios": "^0.19.0",
     "bootstrap": "^4.1.1",
     "chart.js": "^2.8.0",
-    "font-awesome": "^4.7.0",
     "joi-browser": "^13.4.0",
+    "jspdf": "^1.5.3",
+    "jspdf-autotable": "^3.2.4",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "numeral": "^2.0.6",
+    "print-js": "^1.0.61",
     "react": "^16.8.6",
-    "react-bootstrap-datetimepicker": "0.0.22",
-    "react-chartjs-2": "^2.7.6",
-    "react-datepicker": "^2.8.0",
-    "react-datetime": "^2.16.3",
-    "react-datetimepicker-bootstrap": "^1.1.2",
     "react-dom": "^16.8.6",
     "react-image-lightbox": "^5.1.0",
-    "react-number-format": "^4.2.0",
-    "react-pretty-numbers": "^3.0.0",
     "react-radio-buttons": "^1.2.2",
     "react-radio-group": "^3.0.3",
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
     "react-select": "^3.0.4",
     "react-toastify": "^5.3.2",
-    "react-web-tabs": "^1.0.1",
-    "react-websocket": "^2.0.1",
-    "scroll-js": "^2.2.1",
     "socket.io-client": "^2.2.0",
-    "tempusdominus-bootstrap-4": "^5.1.2",
     "websocket": "^1.0.29"
   },
   "scripts": {
@@ -61,6 +51,7 @@
     ]
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.9.0"
+    "@fortawesome/fontawesome-free": "^5.9.0",
+    "react-to-print": "^2.3.2"
   }
 }

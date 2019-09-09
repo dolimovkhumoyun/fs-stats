@@ -7,6 +7,9 @@ class TableHeader extends Component {
     return (
       <thead>
         <tr>
+          <th scope="col" style={{ width: "10%" }}>
+            #
+          </th>
           {columns.map(column => (
             <th key={column.path} scope="col">
               {column.label}

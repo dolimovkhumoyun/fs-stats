@@ -2,23 +2,23 @@ import React, { Component } from "react";
 import NavBar from "./common/navBar";
 import SearchBar from "./common/searchBar";
 import RegionsTable from "./common/regionsTable";
+import io from "socket.io-client";
 import _ from "lodash";
-import { toast } from "react-toastify";
-
-import "../css/search.css";
-import "react-toastify/dist/ReactToastify.min.css";
 
 import animateScrollTo from "animated-scroll-to";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
+import "../css/search.css";
 
-import { Tabs, Button, Badge } from "antd";
+import { Tabs, Button, Icon } from "antd";
 import "antd/dist/antd.css";
-
-import io from "socket.io-client";
 
 import Lightbox from "react-image-lightbox";
 import "react-image-lightbox/style.css";
 
 import numeral from "numeral";
+import printJS from "print-js";
+import "jspdf-autotable";
 
 //  Search Bar
 class Search extends Component {
@@ -38,6 +38,7 @@ class Search extends Component {
     },
     request: [],
     count: [],
+    postsAll: [],
     selectedOption: "",
     loading: false,
     iconLoading: false,
@@ -52,12 +53,32 @@ class Search extends Component {
     }
 
     // const token = localStorage.getItem("token");
+
     const that = this;
     var count = [];
+
     this.socket.once("connect", function() {
       that.request = [];
 
+      that.socket.on("posts", data => {
+        if (_.isEmpty(that.state.postsAll))
+          that.setState({ postsAll: data.data });
+      });
+
       that.socket.on("search", function(data) {
+        let postsAll = that.state.postsAll;
+        data.data.map(d => {
+          postsAll.map(post => {
+            let postName = _.get(
+              _.find(post.options, { value: d.ip }),
+              "label"
+            );
+            if (postName !== undefined) d.postName = postName;
+            return true;
+          });
+          return true;
+        });
+
         that.setState({ isOn: false });
         // console.log(data);
         const index = _.findIndex(that.request, { id: data.id });
@@ -115,7 +136,6 @@ class Search extends Component {
   }
 
   handleTabClick = option => {
-    console.log(option);
     this.setState({ selectedOption: option });
   };
 
@@ -215,8 +235,10 @@ class Search extends Component {
       the_date: item.the_date,
       token: localStorage.getItem("token")
     };
+    console.log(data);
     this.socket.emit("loadImage", data);
     this.socket.once("image", function(data) {
+      console.log(data);
       if (oldImg !== undefined && oldImg.event_id === data.event_id) {
         that.setState({ visible: true });
       } else {
@@ -250,18 +272,44 @@ class Search extends Component {
     });
   };
 
+  printTablePdf = (regionId, e) => {
+    e.preventDefault();
+    const { startDate, endDate, direction } = this.state.data;
+    const { request } = this.state;
+
+    var data = request[0].data;
+
+    data = _.find(request, { id: regionId });
+    const region = _.find(direction, { value: regionId });
+    // console.log(request);
+    console.log(data);
+    printJS({
+      printable: data.data,
+      type: "json",
+      properties: [
+        { field: "postName", displayName: "ЙПХ масканлари" },
+        { field: "camera", displayName: "Йўналиш" },
+        { field: "the_date", displayName: "Сана ва вакт" },
+        { field: "car_number", displayName: "Давлат ДРБ" }
+      ],
+      header: `<h3 class="custom-h3">${region.label}  ${startDate} дан ~ ${endDate} гача</h3>`,
+      style: ".custom-h3 { color: red; } * {text-align:center}"
+    });
+    //["camera", "car_number", "the_date", "ip"],
+  };
+
   render() {
-    const { data, request, count, visible, isOn } = this.state;
+    const { data, request, count, visible, isOn, postsAll } = this.state;
     // const { socket } = this.props;
     const { direction } = data;
     const { TabPane } = Tabs;
 
     return (
       <React.Fragment>
-        <div className="">
-          <NavBar />
+        <NavBar />
+        <div className="container-fluid">
           <div className="row">
-            <div className="col-md-3 mw-30 rounded-sm searchBar shadow">
+            <div className="col-md-3  rounded-sm searchBar shadow">
               <h1 className="mt-4">Филтрлаш</h1>
               <hr />
               <SearchBar
@@ -272,7 +320,7 @@ class Search extends Component {
                 isOn={isOn}
               />
             </div>
-            <div className="col-md mt-4">
+            <div className="col-md-8 mt-4">
               <Tabs
                 defaultActiveKey="1"
                 tabPosition="left"
@@ -289,9 +337,21 @@ class Search extends Component {
                     className="tabs"
                   >
                     <div className="mt-4   ">
+                      {/* <Tooltip placement="bottomRight" title="Print"> */}
+                      <Icon
+                        type="printer"
+                        theme="twoTone"
+                        size="large"
+                        style={{ fontSize: "30px" }}
+                        className="float-right"
+                        onClick={evt => this.printTablePdf(option.value, evt)}
+                      />
+                      {/* </Tooltip> */}
+
                       <div className="">
                         <RegionsTable
                           request={request}
+                          posts={postsAll}
                           regionId={option.value}
                           count={
                             count[_.findIndex(count, { id: option.value })]
@@ -299,6 +359,7 @@ class Search extends Component {
                           loadImage={this.loadImage}
                           isOn={this.state.isOn}
                         />
+
                         <Button
                           type="primary"
                           loading={this.state.loading}

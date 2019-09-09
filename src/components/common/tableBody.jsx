@@ -17,7 +17,7 @@ class TableBody extends Component {
     const { data, columns, loadImage, regionId, isOn } = this.props;
     // const data1 = data.data;
     var req = [];
-
+    // console.log(posts);
     if (data === undefined || data.length === 0) {
     } else {
       if (data[0].data !== -1) req = data[0].data;
@@ -32,6 +32,9 @@ class TableBody extends Component {
           )}
           {req.map((item, index) => (
             <tr key={index} onDoubleClick={() => loadImage(item)}>
+              <th scope="row" style={{ width: "10%" }}>
+                {index + 1}
+              </th>
               {columns.map((column, col_index) => (
                 <td key={col_index}>
                   {this.renderCell(item, column, index + 1)}

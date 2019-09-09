@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import NavBar from "./common/navBar";
+// import NavBar from "./common/navBar";
 // import { Bar } from "react-chartjs-2";
 // import BarChart from "./common/barChart";
-import { Bar, Line, Pie } from "react-chartjs-2";
+// import { Bar, Line, Pie } from "react-chartjs-2";
 
 import "../index.css";
 
@@ -62,37 +62,38 @@ class Dashboard extends Component {
   }
 
   render() {
-    const { charts } = this.state;
+    // const { charts } = this.state;
     return (
-      <React.Fragment>
-        <NavBar />
-        <div className="row">
-          {charts.map(chart => (
-            <div key={chart.id} className="card-deck col-md-4 ">
-              <div className="card shadow m-3 ml-4  ">
-                <div className="card-body  ">
-                  {/* <div className="bar-container"> */}
-                  {chart.type && chart.type === "bar" ? (
-                    <Bar data={this.data[0]} />
-                  ) : (
-                    ""
-                  )}
-                  {chart.type && chart.type === "line" ? (
-                    <Line data={this.data[0]} />
-                  ) : (
-                    ""
-                  )}
-                  {chart.type && chart.type === "pie" ? (
-                    <Pie data={this.data[1]} />
-                  ) : (
-                    ""
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </React.Fragment>
+      // <React.Fragment>
+      //   <NavBar />
+      //   <div className="row">
+      //     {charts.map(chart => (
+      //       <div key={chart.id} className="card-deck col-md-4 ">
+      //         <div className="card shadow m-3 ml-4  ">
+      //           <div className="card-body  ">
+      //             {/* <div className="bar-container"> */}
+      //             {chart.type && chart.type === "bar" ? (
+      //               <Bar data={this.data[0]} />
+      //             ) : (
+      //               ""
+      //             )}
+      //             {chart.type && chart.type === "line" ? (
+      //               <Line data={this.data[0]} />
+      //             ) : (
+      //               ""
+      //             )}
+      //             {chart.type && chart.type === "pie" ? (
+      //               <Pie data={this.data[1]} />
+      //             ) : (
+      //               ""
+      //             )}
+      //           </div>
+      //         </div>
+      //       </div>
+      //     ))}
+      //   </div>
+      // </React.Fragment>
+      <h1>Dashboard</h1>
     );
   }
 }

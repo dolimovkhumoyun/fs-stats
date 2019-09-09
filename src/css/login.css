@@ -1,3 +1,6 @@
+body {
+  height: 30% !important;
+}
 .wrapper {
   margin-top: 11%;
   margin-bottom: 80px;
